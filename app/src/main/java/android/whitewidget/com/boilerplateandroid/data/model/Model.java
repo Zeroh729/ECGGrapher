@@ -6,5 +6,5 @@ package android.whitewidget.com.boilerplateandroid.data.model;
 public class Model {
     private String id;
     private String title;
-    private String imageUrl;
+    private String subtitle;
 }

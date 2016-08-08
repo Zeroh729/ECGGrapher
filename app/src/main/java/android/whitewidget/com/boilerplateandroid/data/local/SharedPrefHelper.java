@@ -13,6 +13,7 @@ public class SharedPrefHelper {
     private SharedPrefHelper (Context context) {
         prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE);
     }
+
     public static SharedPrefHelper getInstance(Context context) {
         if (instance == null) {
             instance = new SharedPrefHelper(context);
