@@ -1,30 +1,49 @@
 package android.whitewidget.com.boilerplateandroid.data.remote;
 
-import android.whitewidget.com.boilerplateandroid.data.model.Model;
+import android.whitewidget.com.boilerplateandroid.data.model.Article;
+import android.whitewidget.com.boilerplateandroid.utils.OttoBus;
 
-import java.util.List;
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EBean;
+
+import java.io.IOException;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 
-/**
- * Created by Admin on 3/8/16.
- */
-public interface BaseService {
-    String API_ENDPOINT = "http://readytoparent.com.ph";
+@EBean
+public class BaseService {
+    private static final String API_ENDPOINT = "http://readytoparent.com.ph";
 
-    @GET("/articles/?json=get_tag_index")
-    Call<List<Model>> listRepos();
+    @Bean
+    OttoBus bus;
 
-    class Creator {
-        public static BaseService newService() {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(API_ENDPOINT)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            return retrofit.create(BaseService.class);
+    public interface BaseTask{
+        @GET("/articles/?json=get_tag_index")
+        Call<Article> listRepos();
+
+        //Add more api links here
+    }
+
+    private static BaseTask newService() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(API_ENDPOINT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        return retrofit.create(BaseTask.class);
+    }
+
+    @Background
+    public void getArticle(){
+        try {
+            Call<Article> call = newService().listRepos();
+            Article article = call.execute().body();
+            bus.post(article);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
