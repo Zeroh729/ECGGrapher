@@ -8,4 +8,19 @@
     <color name="accentDark2">#8b0f39</color>
     <color name="textPrimary">@android:color/white</color>
     <color name="windowBackground">@android:color/background_light</color>
+
+    <color name="divider">#26000000</color>
+    <color name="text_disabled">#42000000</color>
+    <color name="text_hint">#42000000</color>
+    <color name="text_primary">#DD000000</color>
+    <color name="text_secondary">#89000000</color>
+    <color name="statusbar_light">#E0E0E0</color>
+    <color name="appbar_light">#F5F5F5</color>
+    <color name="background_light">#FAFAFA</color>
+    <color name="cards_light">#FFFFFF</color>
+    <color name="icons_active">#89000000</color>
+    <color name="icons_inactive">#42000000</color>
+
+    <color name="darkoverlay">#58000000</color>
+    <color name="darkeroverlay">#96000000</color>
 </resources>
