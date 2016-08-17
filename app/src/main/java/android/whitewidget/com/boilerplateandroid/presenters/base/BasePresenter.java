@@ -1,4 +1,4 @@
-package android.whitewidget.com.boilerplateandroid.presenters;
+package android.whitewidget.com.boilerplateandroid.presenters.base;
 
 
 public interface BasePresenter {

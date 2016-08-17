@@ -1,8 +1,6 @@
 package android.whitewidget.com.boilerplateandroid.utils;
 
-import android.content.Context;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -16,13 +14,13 @@ public class Validation {
         return true;
     }
 
-    public static boolean isLegalAge(Context context, int year, int month, int day){
+    public static boolean isLegalAge(int year, int month, int day){
         Calendar age = Calendar.getInstance();
         age.set(year, month, day);
-        return isLegalAge(context, age);
+        return isLegalAge(age);
     }
 
-    public static boolean isLegalAge(Context context, Calendar age){
+    public static boolean isLegalAge(Calendar age){
         final Calendar max = Calendar.getInstance();
         max.set(Calendar.YEAR, max.get(Calendar.YEAR) - 18);
 
@@ -40,7 +38,6 @@ public class Validation {
         chosen.set(Calendar.MILLISECOND, 0);
 
         if(chosen.after(max)){
-            Toast.makeText(context, "Please select valid date.", Toast.LENGTH_LONG).show();
             return false;
         }
 
