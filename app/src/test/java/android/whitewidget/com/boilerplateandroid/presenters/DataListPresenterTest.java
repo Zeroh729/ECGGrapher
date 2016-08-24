@@ -9,7 +9,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class DataListPresenterTest {
 
 
-
     @Before
     public void setUp() throws Exception {
 

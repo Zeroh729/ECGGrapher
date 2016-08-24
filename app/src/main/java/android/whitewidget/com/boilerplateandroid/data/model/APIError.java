@@ -16,5 +16,10 @@ public class APIError {
         return message;
     }
 
-    //https://futurestud.io/blog/retrofit-2-simple-error-handling
+    //How to use this
+    //  in onResponse(Call<Model> call, Response<Model> response)()
+        //  if(response.isSuccessful()){
+        //      APIError error = ErrorUtils.parseError(response);
+        //  }
+
 }
