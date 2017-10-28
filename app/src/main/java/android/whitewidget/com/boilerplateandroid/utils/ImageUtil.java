@@ -1,6 +1,11 @@
 package android.whitewidget.com.boilerplateandroid.utils;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetFileDescriptor;
@@ -10,19 +15,30 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Parcelable;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.whitewidget.com.boilerplateandroid.utils.RealPathUtil;
+import android.whitewidget.com.boilerplateandroid.utils._;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.R.attr.bitmap;
+import static android.R.attr.orientation;
+import static android.R.attr.rotation;
 
 /**
  * Created by Admin on 8/8/16.
@@ -34,18 +50,158 @@ public class ImageUtil {
 
     public static int minWidthQuality = DEFAULT_MIN_WIDTH_QUALITY;
 
-    public static Bitmap getCorrectlyOrientedImage(Context context, Uri photoUri){
-        try {
-            int MAX_IMAGE_DIMENSION = 400;
+    public static Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        //QQ0
+//        inImage.compress(Bitmap.CompressFormat.JPEG, 70, bytes);
 
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+
+
+    public static String getRealPathFromURI(Context context, Uri uri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = context.getContentResolver().query(uri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+
+    /**
+     * A copy of the Android internals  insertImage method, this method populates the
+     * meta data with DATE_ADDED and DATE_TAKEN. This fixes a common problem where media
+     * that is inserted manually gets saved at the end of the gallery (because date is not populated).
+     * @see android.provider.MediaStore.Images.Media#insertImage(ContentResolver, Bitmap, String, String)
+     */
+    public static final String insertImage(ContentResolver cr,
+                                           Bitmap source,
+                                           String title,
+                                           String description) {
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, title);
+        values.put(MediaStore.Images.Media.DESCRIPTION, description);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        // Add the date meta data to ensure the image is added at the front of the gallery
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+
+        Uri url = null;
+        String stringUrl = null;    /* value to be returned */
+
+        try {
+            url = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+            if (source != null) {
+                OutputStream imageOut = cr.openOutputStream(url);
+                try {
+                    source.compress(Bitmap.CompressFormat.JPEG, 50, imageOut);
+                } finally {
+                    imageOut.close();
+                }
+
+                long id = ContentUris.parseId(url);
+                Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                storeThumbnail(cr, miniThumb, id, 50F, 50F, MediaStore.Images.Thumbnails.MICRO_KIND);
+            } else {
+                cr.delete(url, null, null);
+                url = null;
+            }
+        } catch (Exception e) {
+            if (url != null) {
+                cr.delete(url, null, null);
+                url = null;
+            }
+        }
+
+        if (url != null) {
+            stringUrl = url.toString();
+        }
+
+        return stringUrl;
+    }
+
+    /**
+     * A copy of the Android internals StoreThumbnail method, it used with the insertImage to
+     * populate the android.provider.MediaStore.Images.Media#insertImage with all the correct
+     * meta data. The StoreThumbnail method is private so it must be duplicated here.
+     * @see android.provider.MediaStore.Images.Media (StoreThumbnail private method)
+     */
+    private static final Bitmap storeThumbnail(
+            ContentResolver cr,
+            Bitmap source,
+            long id,
+            float width,
+            float height,
+            int kind) {
+
+        // create the matrix to scale it
+        Matrix matrix = new Matrix();
+
+        float scaleX = width / source.getWidth();
+        float scaleY = height / source.getHeight();
+
+        matrix.setScale(scaleX, scaleY);
+
+        Bitmap thumb = Bitmap.createBitmap(source, 0, 0,
+                source.getWidth(),
+                source.getHeight(), matrix,
+                true
+        );
+
+        ContentValues values = new ContentValues(4);
+        values.put(MediaStore.Images.Thumbnails.KIND,kind);
+        values.put(MediaStore.Images.Thumbnails.IMAGE_ID,(int)id);
+        values.put(MediaStore.Images.Thumbnails.HEIGHT,thumb.getHeight());
+        values.put(MediaStore.Images.Thumbnails.WIDTH,thumb.getWidth());
+
+        Uri url = cr.insert(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values);
+
+        try {
+            OutputStream thumbOut = cr.openOutputStream(url);
+            thumb.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
+            thumbOut.close();
+            return thumb;
+        } catch (FileNotFoundException ex) {
+            return null;
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    public static Bitmap getBitmapFromFilePath(String path) throws FileNotFoundException {
+        File f = new File(path);
+        return BitmapFactory.decodeStream(new FileInputStream(f));
+    }
+
+    public static byte[] bitmapToByteArray(Bitmap picture){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        picture.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
+
+    public static Bitmap getCorrectlyOrientedImage(Context context, Uri photoUri) {
+        int rotatedWidth, rotatedHeight;
+        int orientation = getOrientation(context, photoUri);
+
+        try {
+            int MAX_IMAGE_DIMENSION = 1200;
             InputStream is = context.getContentResolver().openInputStream(photoUri);
             BitmapFactory.Options dbo = new BitmapFactory.Options();
             dbo.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(is, null, dbo);
             is.close();
-
-            int rotatedWidth, rotatedHeight;
-            int orientation = getOrientation(context, photoUri);
 
             if (orientation == 90 || orientation == 270) {
                 rotatedWidth = dbo.outHeight;
@@ -71,37 +227,59 @@ public class ImageUtil {
             }
             is.close();
 
-            //
-            //if the orientation is not 0 (or -1, which means we don't know), we
-            //have to do a rotation.
-            //
-            if (orientation > 0) {
-                Matrix matrix = new Matrix();
-                matrix.postRotate(orientation);
-                srcBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(),
-                        srcBitmap.getHeight(), matrix, true);
-            }
+    /*
+     * if the orientation is not 0 (or -1, which means we don't know), we
+     * have to do a rotation.
+     */
+        if (orientation > 0) {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(orientation);
 
+            _.log("Image Util: rotating image to orientation " + orientation);
+
+            srcBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(),
+                    srcBitmap.getHeight(), matrix, true);
+        }
             return srcBitmap;
         }catch (IOException e){
-            e.printStackTrace();
             return null;
         }
     }
 
-
     public static int getOrientation(Context context, Uri photoUri) {
-    /* it's on the external media. */
-        Cursor cursor = context.getContentResolver().query(photoUri,
-                new String[] { MediaStore.Images.ImageColumns.ORIENTATION }, null, null, null);
+        ExifInterface ei;
+        int orientation;
+        try {
+            _.log("Image Util: File path is " + RealPathUtil.getRealPathFromURI_API19(context, photoUri));
+            ei = new ExifInterface(RealPathUtil.getRealPathFromURI_API19(context, photoUri));
 
-        if (cursor.getCount() != 1) {
-            return -1;
+            orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
+        } catch (Exception e) {
+//            e.printStackTrace();
+            _.log("Image Util: Error " + e.getMessage());
+            return 0;
         }
 
-        cursor.moveToFirst();
-        return cursor.getInt(0);
+        _.log("Image Util: Exif orientation is " + orientation);
+
+        switch(orientation) {
+
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return 90;
+
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return 180;
+
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return 270;
+            case ExifInterface.ORIENTATION_NORMAL:
+            default:
+                return 0;
+        }
     }
+
+
 
     public static Bitmap resize(Bitmap image, int maxWidth, int maxHeight) {
         if (maxHeight > 0 && maxWidth > 0) {
@@ -288,20 +466,6 @@ public class ImageUtil {
         return bm;
     }
 
-
-    public static Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
-
-
-    public static void loadToImageView(Context context, Intent data, ImageView imageView){
-        Uri imageUri = getImageUri(context, data);
-        imageView.setImageBitmap(ImageUtil.getCorrectlyOrientedImage(context, imageUri));
-    }
-
     public static Uri getImageUri(Context context, Intent imageData){
         Bitmap bm = ImageUtil.getImageFromResult(context, imageData);
 
@@ -310,41 +474,6 @@ public class ImageUtil {
         String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bm, "Title", null);
 
         return Uri.parse(path);
-    }
-
-    public static String getRealPathFromURI(Context context, Uri uri) {
-        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        cursor.moveToFirst();
-        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-        return cursor.getString(idx);
-    }
-
-    public static File getResizedImageFile(Context context, Uri imageUri) {
-        Bitmap bitmapImage;
-        bitmapImage = ImageUtil.getCorrectlyOrientedImage(context, imageUri);
-        bitmapImage = resizeBitmap(bitmapImage, 450, 450);
-
-        //create a file to write bitmap data
-        File f = new File(context.getCacheDir(), "wat.png");
-        try {
-            f.createNewFile();
-            //Convert bitmap to byte array
-            Bitmap bitmap = bitmapImage;
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
-            byte[] bitmapdata = bos.toByteArray();
-
-            //write the bytes in file
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(bitmapdata);
-            fos.flush();
-            fos.close();
-
-            return f;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public static Bitmap resizeBitmap(Bitmap image, int maxWidth, int maxHeight) {

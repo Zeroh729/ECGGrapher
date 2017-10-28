@@ -12,7 +12,7 @@ public class NetworkUtil {
     public static int TYPE_MOBILE = 2;
     public static int TYPE_NOT_CONNECTED = 0;
 
-    public boolean isConnected(){
+    public static boolean isConnected(){
         return getConnectivityStatus(BoilerplateApplication_.getInstance()) != TYPE_NOT_CONNECTED;
     }
 

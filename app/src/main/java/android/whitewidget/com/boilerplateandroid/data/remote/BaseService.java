@@ -2,7 +2,6 @@ package android.whitewidget.com.boilerplateandroid.data.remote;
 
 import android.whitewidget.com.boilerplateandroid.data.model.APIError;
 import android.whitewidget.com.boilerplateandroid.data.model.Article;
-import android.whitewidget.com.boilerplateandroid.utils.ErrorUtils;
 import android.whitewidget.com.boilerplateandroid.utils.OttoBus;
 
 import org.androidannotations.annotations.Background;
