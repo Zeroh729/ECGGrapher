@@ -53,7 +53,7 @@ public class MainActivity extends BaseActivity{
         MyFadeFormatter formatter =new MyFadeFormatter(WIDTH_X);
         formatter.setLegendIconEnabled(false);
         plot.addSeries(ecgSeries, formatter);
-        plot.setRangeBoundaries(-10, 10, BoundaryMode.FIXED);
+        plot.setRangeBoundaries(-5, 10, BoundaryMode.FIXED);
         plot.setDomainBoundaries(0, WIDTH_X, BoundaryMode.FIXED);
 
         // reduce the number of range labels
@@ -138,12 +138,25 @@ public class MainActivity extends BaseActivity{
                             }
 
                             // generate some random data:
-                            if (latestIndex % blipInteral == 0) {
-                                // insert a "blip" to simulate a heartbeat:
-                                data[latestIndex] = (Math.random() * 10) + 3;
-                            } else {
-                                // insert a random sample:
-                                data[latestIndex] = Math.random() * 2;
+                            int ecgIndex = latestIndex % blipInteral;
+                            switch (ecgIndex){
+                                case 2 : //P signal
+                                    data[latestIndex] = Math.random() * 3;
+                                    break;
+                                case 3 : //Q signal
+                                    data[latestIndex] = -(Math.random() * 2);
+                                    break;
+                                case 4 : //R signal
+                                    data[latestIndex] = (Math.random() * 5) + 2;
+                                    break;
+                                case 5 : //S signal
+                                    data[latestIndex] = -(Math.random() * 2);
+                                    break;
+                                case 8 : //T signal
+                                    data[latestIndex] = Math.random() * 2;
+                                    break;
+                                default: //baseline
+                                    data[latestIndex] = 0;
                             }
 
                             if(latestIndex < data.length - 1) {
