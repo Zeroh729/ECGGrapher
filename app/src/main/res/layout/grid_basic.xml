@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.whitewidget.com.boilerplateandroid.ui.main.views.SquareLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.zeroh729.com.ecggrapher.ui.main.views.SquareLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="8dp">
@@ -21,4 +21,4 @@
         style="@style/TextAppearance.AppCompat.Headline"
         android:text="Title 1"/>
 
-</android.whitewidget.com.boilerplateandroid.ui.main.views.SquareLayout>
+</android.zeroh729.com.ecggrapher.ui.main.views.SquareLayout>

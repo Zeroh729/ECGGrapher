@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="android.whitewidget.com.boilerplateandroid">
+    package="android.zeroh729.com.ecggrapher">
 
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:name=".ECGGrapher_"
+        android:name="android.zeroh729.com.ecggrapher.ECGGrapher_"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".ui.main.activities.MainActivity_"
+        <activity android:name="android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity_"
             android:label="Home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".utils.receivers.NetworkChangeReceiver_" >
+        <receiver android:name="android.zeroh729.com.ecggrapher.utils.receivers.NetworkChangeReceiver_" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>

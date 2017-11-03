@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         multiDexEnabled true
-        applicationId "android.whitewidget.com.boilerplateandroid"
+        applicationId "android.zeroh729.com.ecggrapher"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
