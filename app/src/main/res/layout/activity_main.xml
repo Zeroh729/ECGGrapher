@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    xmlns:ap="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_width="match_parent">
 
-    <include layout="@layout/toolbar_app"/>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_data"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:listitem="@layout/grid_basic">
-    </android.support.v7.widget.RecyclerView>
-
+    <com.androidplot.xy.XYPlot
+        style="@style/APDefacto.Dark"
+        android:id="@+id/plot"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        ap:renderMode="use_background_thread"
+        ap:title="ECG Example"
+        ap:rangeTitle="range"
+        ap:domainTitle="domain"/>
 </LinearLayout>

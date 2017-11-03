@@ -1,91 +1,202 @@
 package android.zeroh729.com.ecggrapher.ui.main.activities;
 
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.graphics.DashPathEffect;
+import android.graphics.Paint;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.zeroh729.com.ecggrapher.R;
-import android.zeroh729.com.ecggrapher.data.events.NetworkEvent;
-import android.zeroh729.com.ecggrapher.data.model.Article;
-import android.zeroh729.com.ecggrapher.data.model.Model;
-import android.zeroh729.com.ecggrapher.data.model.Tag;
-import android.zeroh729.com.ecggrapher.data.remote.BaseService;
 import android.zeroh729.com.ecggrapher.presenters.DataListPresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
-import android.zeroh729.com.ecggrapher.ui.base.BaseAdapterRecyclerView;
-import android.zeroh729.com.ecggrapher.ui.main.adapters.BasicGridRecyclerAdapter;
-import android.zeroh729.com.ecggrapher.utils._;
-import android.widget.Toast;
 
-import com.squareup.otto.Subscribe;
+import com.androidplot.util.PixelUtils;
+import com.androidplot.util.Redrawer;
+import com.androidplot.xy.AdvancedLineAndPointRenderer;
+import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.CatmullRomInterpolator;
+import com.androidplot.xy.LineAndPointFormatter;
+import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYGraphWidget;
+import com.androidplot.xy.XYPlot;
+import com.androidplot.xy.XYSeries;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.ViewsById;
+
+import java.lang.ref.WeakReference;
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
+import java.util.Arrays;
 
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends BaseActivity implements DataListPresenter.Screen{
+public class MainActivity extends BaseActivity{
 
-    @Bean
-    BaseService service;
+    @ViewById
+    XYPlot plot;
 
-    @ViewById(R.id.rv_data)
-    RecyclerView rv_data;
-
-    @Bean
-    BasicGridRecyclerAdapter adapter;
+    /**
+     * Uses a separate thread to modulate redraw frequency.
+     */
+    private Redrawer redrawer;
+    private static final int WIDTH_X = 33;
+    private static final int BLIPS = 3;
+    private static final int UPDATE_FREQHRTZ = 10;
 
     @AfterViews
-    public void afterViews(){
-        service.getArticle();
+    public void afterviews(){
+        ECGModel ecgSeries = new ECGModel(WIDTH_X, UPDATE_FREQHRTZ);
 
-        rv_data.setLayoutManager(new GridLayoutManager(this, 2));
-        rv_data.setAdapter(adapter);
-        adapter.setListener(new BaseAdapterRecyclerView.ClickListener() {
-            @Override
-            public void onClick(int position) {
-                _.showToast("Clicked " + position);
-            }
-        });
+        // add a new series' to the xyplot:
+        MyFadeFormatter formatter =new MyFadeFormatter(WIDTH_X);
+        formatter.setLegendIconEnabled(false);
+        plot.addSeries(ecgSeries, formatter);
+        plot.setRangeBoundaries(-10, 10, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(0, WIDTH_X, BoundaryMode.FIXED);
+
+        // reduce the number of range labels
+        plot.setLinesPerRangeLabel(3);
+
+        // start generating ecg data in the background:
+        ecgSeries.start(new WeakReference<>(plot.getRenderer(AdvancedLineAndPointRenderer.class)));
+
+        // set a redraw rate of 30hz and start immediately:
+        redrawer = new Redrawer(plot, 30, true);
     }
 
-    @Subscribe
-    public void subscribeToNetworkEvent(NetworkEvent event){
-        Toast.makeText(this, "Connected : " + event.isConnected(), Toast.LENGTH_SHORT).show();
-    }
+    /**
+     * Special {@link AdvancedLineAndPointRenderer.Formatter} that draws a line
+     * that fades over time.  Designed to be used in conjunction with a circular buffer model.
+     */
+    public static class MyFadeFormatter extends AdvancedLineAndPointRenderer.Formatter {
 
-    @Subscribe
-    public void subscribeToTagList(Article article){
-        for(Tag tag : article.getTags()) {
-            Model model = new Model();
-            model.setTitle(tag.getTitle());
-            model.setSubtitle(tag.getSlug());
-            model.setImage(imageurls[adapter.getItems().size()]);
-            adapter.getItems().add(model);
+        private int trailSize;
+
+        public MyFadeFormatter(int trailSize) {
+            this.trailSize = trailSize;
         }
-        update();
+
+        @Override
+        public Paint getLinePaint(int thisIndex, int latestIndex, int seriesSize) {
+            // offset from the latest index:
+            int offset;
+            if(thisIndex > latestIndex) {
+                offset = latestIndex + (seriesSize - thisIndex);
+            } else {
+                offset =  latestIndex - thisIndex;
+            }
+
+            float scale = 255f / trailSize;
+            int alpha = (int) (255 - (offset * scale));
+            getLinePaint().setAlpha(alpha > 0 ? alpha : 0);
+            return getLinePaint();
+        }
     }
 
-    @UiThread
-    public void update(){
-        adapter.notifyDataSetChanged();
+    /**
+     * Primitive simulation of some kind of signal.  For this example,
+     * we'll pretend its an ecg.  This class represents the data as a circular buffer;
+     * data is added sequentially from left to right.  When the end of the buffer is reached,
+     * i is reset back to 0 and simulated sampling continues.
+     */
+    public static class ECGModel implements XYSeries {
+
+        private final Number[] data;
+        private final long delayMs;
+        private final int blipInteral;
+        private final Thread thread;
+        private boolean keepRunning;
+        private int latestIndex;
+
+        private WeakReference<AdvancedLineAndPointRenderer> rendererRef;
+
+        /**
+         *
+         * @param size Sample size contained within this model
+         * @param updateFreqHz Frequency at which new samples are added to the model
+         */
+        public ECGModel(int size, int updateFreqHz) {
+            data = new Number[size];
+            for(int i = 0; i < data.length; i++) {
+                data[i] = 0;
+            }
+
+            // translate hz into delay (ms):
+            delayMs = 1000 / updateFreqHz;
+
+            blipInteral = size / BLIPS;
+
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (keepRunning) {
+                            if (latestIndex >= data.length) {
+                                latestIndex = 0;
+                            }
+
+                            // generate some random data:
+                            if (latestIndex % blipInteral == 0) {
+                                // insert a "blip" to simulate a heartbeat:
+                                data[latestIndex] = (Math.random() * 10) + 3;
+                            } else {
+                                // insert a random sample:
+                                data[latestIndex] = Math.random() * 2;
+                            }
+
+                            if(latestIndex < data.length - 1) {
+                                // null out the point immediately following i, to disable
+                                // connecting i and i+1 with a line:
+                                data[latestIndex +1] = null;
+                            }
+
+                            if(rendererRef.get() != null) {
+                                rendererRef.get().setLatestIndex(latestIndex);
+                                Thread.sleep(delayMs);
+                            } else {
+                                keepRunning = false;
+                            }
+                            latestIndex++;
+                        }
+                    } catch (InterruptedException e) {
+                        keepRunning = false;
+                    }
+                }
+            });
+        }
+
+        public void start(final WeakReference<AdvancedLineAndPointRenderer> rendererRef) {
+            this.rendererRef = rendererRef;
+            keepRunning = true;
+            thread.start();
+        }
+
+        @Override
+        public int size() {
+            return data.length;
+        }
+
+        @Override
+        public Number getX(int index) {
+            return index;
+        }
+
+        @Override
+        public Number getY(int index) {
+            return data[index];
+        }
+
+        @Override
+        public String getTitle() {
+            return "Signal";
+        }
     }
 
-    String[] imageurls = {
-        "https://upload.wikimedia.org/wikipedia/commons/d/d4/Kim_Jong-Un_Photorealistic-Sketch.jpg",
-        "http://www.gannett-cdn.com/-mm-/5404630eef7d376ec92188c28cfc031e2a4026a4/c=225-0-3775-2669&r=x408&c=540x405/local/-/media/2016/05/10/USATODAY/USATODAY/635984715851776795-AFP-551724097.jpg",
-        "http://a3.files.biography.com/image/upload/c_fill,cs_srgb,dpr_1.0,g_face,h_300,q_80,w_300/MTIwNjA4NjM0MjAzODMzODY4.jpg",
-        "http://i.telegraph.co.uk/multimedia/archive/03523/Kim_Jong_Un_3523321k.jpg",
-        "http://cdn.newsapi.com.au/image/v1/ee8ed0d666012b8e518608e65c88b5fc",
-        "http://cdnph.upi.com/sv/b/i/UPI-4061449758722/2015/1/14497588279875/Kim-Jong-Un-North-Korea-has-hydrogen-bomb.jpg",
-        "http://i2.cdn.turner.com/cnnnext/dam/assets/140116003943-kim-jong-un-north-korea-profile-dictator-horizontal-large-gallery.jpg",
-        "http://static3.businessinsider.com/image/534d72dbeab8ead93be334e3-480/north-korea-kim-jong-un.jpg",
-        "https://i.ytimg.com/vi/50RZrJSC0Cs/maxresdefault.jpg",
-        "http://i.onionstatic.com/onion/1887/6/16x9/600.jpg",
-        "http://s1.ibtimes.com/sites/www.ibtimes.com/files/2016/05/07/kim-jong-un.jpg",
-        "http://i2.mirror.co.uk/incoming/article7993673.ece/ALTERNATES/s615b/Kim-Jong-Un.jpg"
-    };
-
-
+    @Override
+    public void onStop() {
+        super.onStop();
+        redrawer.finish();
+    }
 }
