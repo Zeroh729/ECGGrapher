@@ -1,7 +1,7 @@
 package android.whitewidget.com.boilerplateandroid.utils;
 
 import android.provider.Settings;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication_;
+import android.whitewidget.com.boilerplateandroid.ECGGrapher_;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,6 +38,6 @@ public class SecurityUtil {
     }
 
     public static String getSourceId(){
-        return Settings.Secure.getString(BoilerplateApplication_.getInstance().getContentResolver(), Settings.Secure.ANDROID_ID);
+        return Settings.Secure.getString(ECGGrapher_.getInstance().getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 }

@@ -6,7 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication_;
+import android.whitewidget.com.boilerplateandroid.ECGGrapher_;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.EBean;
@@ -25,7 +25,7 @@ public class FontUtil {
 
     public static FontUtil getInstance(){
         if(instance == null){
-            Context context = BoilerplateApplication_.getInstance().getContext();
+            Context context = ECGGrapher_.getInstance().getContext();
             instance = new FontUtil();
             fontmap = new HashMap<>();
             fontmap.put(Type.NORMAL, Typeface.createFromAsset(context.getAssets(), "fonts/avenirnext_regular.ttf"));

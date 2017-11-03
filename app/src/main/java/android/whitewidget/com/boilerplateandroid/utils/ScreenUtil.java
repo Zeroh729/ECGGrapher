@@ -7,7 +7,7 @@ import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication_;
+import android.whitewidget.com.boilerplateandroid.ECGGrapher_;
 
 public class ScreenUtil {
     private float dpWidth;
@@ -33,14 +33,14 @@ public class ScreenUtil {
     }
 
     public static int getScreenWidth() {
-        WindowManager windowManager = (WindowManager) BoilerplateApplication_.getInstance().getSystemService(Context.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) ECGGrapher_.getInstance().getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics displaymetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(displaymetrics);
         return displaymetrics.widthPixels;
     }
 
     public static int getScreenHeight() {
-        WindowManager windowManager = (WindowManager) BoilerplateApplication_.getInstance().getSystemService(Context.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) ECGGrapher_.getInstance().getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics displaymetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(displaymetrics);
         return displaymetrics.heightPixels;

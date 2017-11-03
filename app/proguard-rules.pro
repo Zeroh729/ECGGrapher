@@ -28,6 +28,8 @@
 -keepattributes Exceptions
 -keepattributes *Annotation*
 
+-keep class com.androidplot.** { *; }
+
 -keepclassmembers class ** {
     @com.squareup.otto.Subscribe public *;
     @com.squareup.otto.Produce public *;

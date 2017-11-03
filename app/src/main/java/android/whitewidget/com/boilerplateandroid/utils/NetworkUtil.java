@@ -3,8 +3,7 @@ package android.whitewidget.com.boilerplateandroid.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication_;
+import android.whitewidget.com.boilerplateandroid.ECGGrapher_;
 
 public class NetworkUtil {
 
@@ -13,7 +12,7 @@ public class NetworkUtil {
     public static int TYPE_NOT_CONNECTED = 0;
 
     public static boolean isConnected(){
-        return getConnectivityStatus(BoilerplateApplication_.getInstance()) != TYPE_NOT_CONNECTED;
+        return getConnectivityStatus(ECGGrapher_.getInstance()) != TYPE_NOT_CONNECTED;
     }
 
     public static int getConnectivityStatus(Context context) {

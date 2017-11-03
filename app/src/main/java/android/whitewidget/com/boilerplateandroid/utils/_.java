@@ -1,12 +1,12 @@
 package android.whitewidget.com.boilerplateandroid.utils;
 
 import android.util.Log;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication_;
+import android.whitewidget.com.boilerplateandroid.ECGGrapher_;
 import android.widget.Toast;
 
 public class _ {
     public static void showToast(String message){
-        Toast.makeText(BoilerplateApplication_.getInstance().getContext(), message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(ECGGrapher_.getInstance().getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     public static void log(String message){

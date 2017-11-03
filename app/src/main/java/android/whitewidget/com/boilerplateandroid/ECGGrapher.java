@@ -6,7 +6,7 @@ import android.content.Context;
 import org.androidannotations.annotations.EApplication;
 
 @EApplication
-public class BoilerplateApplication extends Application{
+public class ECGGrapher extends Application{
     private static Context context;
 
     @Override

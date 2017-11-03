@@ -2,7 +2,7 @@ package android.whitewidget.com.boilerplateandroid.utils;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.whitewidget.com.boilerplateandroid.BoilerplateApplication_;
+import android.whitewidget.com.boilerplateandroid.ECGGrapher_;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class PackageUtil {
         List<ApplicationInfo> packages;
         PackageManager pm;
 
-        pm = BoilerplateApplication_.getInstance().getPackageManager();
+        pm = ECGGrapher_.getInstance().getPackageManager();
         packages = pm.getInstalledApplications(0);
         for (ApplicationInfo packageInfo : packages) {
             if(packageInfo.packageName.equals(targetPackage))
