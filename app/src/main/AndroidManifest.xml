@@ -28,6 +28,8 @@
             </intent-filter>
         </receiver>
 
+        <service android:name=".services.MockSensorService_"/>
+
     </application>
 
 

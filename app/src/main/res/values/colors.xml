@@ -18,8 +18,8 @@
     <color name="appbar_light">#F5F5F5</color>
     <color name="background_light">#FAFAFA</color>
     <color name="cards_light">#FFFFFF</color>
-    <color name="icons_active">#89000000</color>
-    <color name="icons_inactive">#42000000</color>
+    <color name="icons_active">#bebebe</color>
+    <color name="icons_inactive">#9fcecece</color>
 
     <color name="darkoverlay">#58000000</color>
     <color name="darkeroverlay">#96000000</color>
