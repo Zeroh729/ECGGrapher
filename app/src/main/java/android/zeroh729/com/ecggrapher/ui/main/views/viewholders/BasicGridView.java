@@ -9,7 +9,6 @@ import android.zeroh729.com.ecggrapher.ui.main.views.SquareLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ViewById;
@@ -27,7 +26,6 @@ public class BasicGridView extends SquareLayout {
     }
 
     public void bind(Model model, View.OnClickListener listener){
-        Glide.with(getContext()).load(Uri.parse(model.getImage())).into(iv_image);
         tv_title.setText(model.getTitle());
         setOnClickListener(listener);
     }
