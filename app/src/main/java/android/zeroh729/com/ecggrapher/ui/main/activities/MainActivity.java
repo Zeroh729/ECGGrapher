@@ -59,43 +59,81 @@ public class MainActivity extends BaseActivity{
     private static final int REQUEST_ENABLE_BT = 1111;
     private static final int REQUEST_CONNECT_DEVICE = 1112;
 
+    private static final int Y_0_INDICATOR = -1000;
+    private static final int MAX_DATAPOINTS = 1000;
+    private static final double NEW_X_INTERVAL = 0.2d;
+    private static final int DRAW_MILLIS = 200;
+    private static final int DRAW_PQRS_MILLIS = 10;
+
+    private boolean pqrsFlag = true;
+
+    int counter = 0;
+
     private ArrayList<double[]> listPoints = new ArrayList();
     private Handler handler = new Handler();
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            int index = -1;
-            for(int i = 0; i < listPoints.size(); i++) {
-                if (listPoints.get(i)[0] < latestX) {
-                    _.log("comparing: " + listPoints.get(i)[0] + " < " + latestX + " w/ y:" + listPoints.get(i)[1]);
-                    index = i;
-                }else
-                    break;
+            if(listPoints.get(0)[1] == Y_0_INDICATOR){
+                removeLowerXValues();
+                double x = listPoints.get(0)[0];
+                double y = 0;
+                _.log("x: " + x + "\t\t\t\ty:" + y);
+                ecgSeries.appendData(new DataPoint(x,y), true, MAX_DATAPOINTS);
+                listPoints.remove(0);
+                latestX = x;
+
+                currentX += NEW_X_INTERVAL;
+                listPoints.add(new double[]{currentX,Y_0_INDICATOR});
+            }else if(pqrsFlag){
+                pqrsFlag = false;
+                counter = 0;
+
+                final Handler handler1 = new Handler();
+                final Runnable runnable1 = new Runnable() {
+                    @Override
+                    public void run() {
+                        removeLowerXValues();
+                        double x = listPoints.get(0)[0];
+                        double y = listPoints.get(0)[1];
+                        _.log("x: " + x + "\t\t\t\ty:" + y);
+                        ecgSeries.appendData(new DataPoint(x,y), true, MAX_DATAPOINTS);
+                        listPoints.remove(0);
+                        latestX = x;
+
+                        counter++;
+                        offsetIndex--;
+                        _.log("--offsetIndex: " + offsetIndex);
+
+                        if(counter < 4) {
+                            handler1.postDelayed(this, DRAW_PQRS_MILLIS);
+                        }else{
+                            pqrsFlag = true;
+                        }
+                    }
+                };
+                handler1.post(runnable1);
             }
 
-            if(index != -1){
-                listPoints.subList(0, index+1).clear();
-            }
-
-            double x = listPoints.get(0)[0];
-            double y = listPoints.get(0)[1];
-            if(y == -1000){
-                y = 0;
-            }else{
-                offsetIndex--;
-                _.log("--offsetIndex: " + offsetIndex);
-            }
-
-            currentX += 0.1d;
-            listPoints.add(new double[]{currentX,-1000});
-            listPoints.remove(0);
-            ecgSeries.appendData(new DataPoint(x,y), true, 1000);
-            latestX = x;
-            _.log("x: " + x + "\t\t\t\ty:" + y);
             _.log("Drew point, size is now: " + listPoints.size());
-            handler.postDelayed(this, 100);
+            handler.postDelayed(this, DRAW_MILLIS);
         }
     };
+
+    private void removeLowerXValues() {
+        int index = -1;
+        for(int i = 0; i < listPoints.size(); i++) {
+            if (listPoints.get(i)[0] < latestX) {
+                _.log("comparing: " + listPoints.get(i)[0] + " < " + latestX + " w/ y:" + listPoints.get(i)[1]);
+                index = i;
+            }else
+                break;
+        }
+
+        if(index != -1){
+            listPoints.subList(0, index+1).clear();
+        }
+    }
 
     @AfterViews
     void afterviews(){
@@ -108,9 +146,9 @@ public class MainActivity extends BaseActivity{
         graph_view.getViewport().setMaxY(4);
         graph_view.getViewport().setMinY(-3);
 
-        for(int i = 0; i < 1000; i++){
-            listPoints.add(new double[]{currentX,-1000});
-            currentX += 0.1d;
+        for(int i = 0; i < MAX_DATAPOINTS; i++){
+            listPoints.add(new double[]{currentX,Y_0_INDICATOR});
+            currentX += NEW_X_INTERVAL;
         }
 
         handler.post(runnable);
@@ -215,7 +253,7 @@ public class MainActivity extends BaseActivity{
         listPoints.add(offsetIndex++, new double[]{xq, ecg.getQv()});
         listPoints.add(offsetIndex++, new double[]{xr, ecg.getRv()});
         listPoints.add(offsetIndex++, new double[]{xs, ecg.getSv()});
-        listPoints.add(offsetIndex, new double[]{lastx, -1000});
+        listPoints.add(offsetIndex, new double[]{lastx, Y_0_INDICATOR});
 
         _.log("offsetIndex: " + offsetIndex);
     }

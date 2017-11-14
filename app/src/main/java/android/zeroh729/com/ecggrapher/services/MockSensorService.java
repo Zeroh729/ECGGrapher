@@ -41,7 +41,7 @@ public class MockSensorService extends IntentService implements SensorServiceBro
             s = -((Math.abs(Math.random() * 3) + 2.05d)/4);
             ECG ecg = new ECG(p,q,r,s,pdelta,qdelta,rdelta,sdelta);
             broadcastEcgData(ecg);
-            handler.postDelayed(this, 1000);
+            handler.postDelayed(this, 850);
         }
     };
 
