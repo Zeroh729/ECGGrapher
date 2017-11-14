@@ -2,7 +2,9 @@ package android.zeroh729.com.ecggrapher;
 
 import android.app.Application;
 import android.content.Context;
+import android.zeroh729.com.ecggrapher.services.BluetoothAdapterStateService_;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EApplication;
 
 @EApplication
@@ -13,6 +15,13 @@ public class ECGGrapher extends Application{
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        BluetoothAdapterStateService_.intent(this).start();
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        BluetoothAdapterStateService_.intent(this).stop();
     }
 
     public Context getContext(){

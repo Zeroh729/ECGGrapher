@@ -1,13 +1,57 @@
 package android.zeroh729.com.ecggrapher.data.model;
 
 public class ECG {
-    double signal;
+    double pv;
+    double qv;
+    double rv;
+    double sv;
+    double pdelta;
+    double qdelta;
+    double rdelta;
 
-    public double getSignal() {
-        return signal;
+    public ECG(double pv, double qv, double rv, double sv, double pdelta, double qdelta, double rdelta, double sdelta) {
+        this.pv = pv;
+        this.qv = qv;
+        this.rv = rv;
+        this.sv = sv;
+        this.pdelta = pdelta;
+        this.qdelta = qdelta;
+        this.rdelta = rdelta;
+        this.sdelta = sdelta;
     }
 
-    public void setSignal(double signal) {
-        this.signal = signal;
+    public double getPv() {
+
+        return pv;
     }
+
+    public double getQv() {
+        return qv;
+    }
+
+    public double getRv() {
+        return rv;
+    }
+
+    public double getSv() {
+        return sv;
+    }
+
+    public double getPdelta() {
+        return pdelta;
+    }
+
+    public double getQdelta() {
+        return qdelta;
+    }
+
+    public double getRdelta() {
+        return rdelta;
+    }
+
+    public double getSdelta() {
+        return sdelta;
+    }
+
+    double sdelta;
 }

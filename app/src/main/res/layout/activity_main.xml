@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
     <LinearLayout
@@ -26,13 +27,13 @@
         android:layout_gravity="left|top"
         style="@style/IconButton"
         android:layout_margin="6dp"
-        android:src="@drawable/ic_bluetooth_black_24dp"
+        app:srcCompat="@drawable/ic_bluetooth_black_24dp"
         />
     <ImageButton
         android:id="@+id/ibtn_history"
         android:layout_gravity="right|top"
         style="@style/IconButton"
         android:layout_margin="6dp"
-        android:src="@drawable/ic_records_black_24dp"
+        app:srcCompat="@drawable/ic_records_black_24dp"
         />
 </FrameLayout>

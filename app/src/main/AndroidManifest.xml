@@ -24,6 +24,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.main.activities.DeviceList" />
+
         <receiver android:name="android.zeroh729.com.ecggrapher.utils.receivers.NetworkChangeReceiver_" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
@@ -31,6 +33,7 @@
         </receiver>
 
         <service android:name=".services.MockSensorService_"/>
+        <service android:name=".services.BluetoothAdapterStateService_" />
 
     </application>
 
