@@ -32,3 +32,5 @@
     @com.squareup.otto.Subscribe public *;
     @com.squareup.otto.Produce public *;
 }
+
+-keep class com.androidplot.** { *; }
