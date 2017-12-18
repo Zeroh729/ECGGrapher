@@ -10,18 +10,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
+import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
+import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
+import android.zeroh729.com.ecggrapher.interactors.myHandler;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
 import android.zeroh729.com.ecggrapher.ui.main.views.MyFadeFormatter;
@@ -64,6 +65,7 @@ public class MainActivity extends BaseActivity {
 
     private ECGSeries series;
     private Redrawer redrawer;
+    private BluetoothService bluetoothService;
 
     @AfterViews
     void afterviews(){
@@ -75,14 +77,14 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        plot.addSeries(series, new MyFadeFormatter(2000));
-        plot.setRangeBoundaries(0, 1023, BoundaryMode.FIXED);
-        plot.setDomainBoundaries(0, 2000, BoundaryMode.FIXED);
+        plot.addSeries(series, new MyFadeFormatter(Constants.COUNT_X - 100));
+        plot.setRangeBoundaries(0, Constants.COUNT_Y, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(0, Constants.COUNT_X, BoundaryMode.FIXED);
 
         // reduce the number of range labels
         plot.setLinesPerRangeLabel(3);
         series.start();
-        redrawer = new Redrawer(plot, 30, true);
+        redrawer = new Redrawer(plot, 60, true);
         lv_devices.setAdapter(adapter);
     }
 
@@ -95,6 +97,10 @@ public class MainActivity extends BaseActivity {
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(btreceiver, filter);
+
+        if(bluetoothService != null){
+            bluetoothService.connect();
+        }
     }
 
     @Override
@@ -105,6 +111,10 @@ public class MainActivity extends BaseActivity {
         if(redrawer != null)
         redrawer.finish();
         series.stop();
+
+        if (bluetoothService != null) {
+            bluetoothService.stop();
+        }
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND
@@ -148,7 +158,7 @@ public class MainActivity extends BaseActivity {
 
 
     @ItemClick
-    void lv_devicesItemClicked(BluetoothDevice device) {
+    void lv_devicesItemClicked(final BluetoothDevice device) {
         _.log("Tapped on Item "+ device.getName() + " " + device.getAddress());
 //        final BluetoothDevice device = bluetoothDevicesAdapter.getItem(position);
 
@@ -158,9 +168,13 @@ public class MainActivity extends BaseActivity {
                 .setMessage("Do you want to connect to: " + device.getName() + " - " + device.getAddress())
                 .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialog, int which) {
-                        _.log("Opening new Activity");
                         btSystem.cancelDiscovery();
+                        myHandler handler = new myHandler(MainActivity.this);
+                        bluetoothService = new BluetoothService(handler, device);
+                        bluetoothService.connect();
                         lv_devices.setVisibility(View.GONE);
+                        ib_bt.setVisibility(View.GONE);
+                        tv_status.setVisibility(View.GONE);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -212,5 +226,19 @@ public class MainActivity extends BaseActivity {
             tv_status.setText("Enabling bluetooth");
             btSystem.enableBluetooth(this);
         }
+    }
+
+    public void receiveData(int data) {
+        _.log("Plotting :  " + data);
+        if(data > 100) {
+            series.addData(data);
+        }
+    }
+
+    public void disconnected() {
+        bluetoothService.stop();
+//        lv_devices.setVisibility(View.VISIBLE);
+//        ib_bt.setVisibility(View.VISIBLE);
+//        tv_status.setVisibility(View.VISIBLE);
     }
 }

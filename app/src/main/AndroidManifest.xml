@@ -17,7 +17,8 @@
         android:theme="@style/AppTheme">
 
         <activity android:name="android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity_"
-            android:label="Home">
+            android:label="AJ's ECG Grapher"
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

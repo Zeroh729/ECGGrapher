@@ -9,10 +9,13 @@
         android:id="@+id/plot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        ap:renderMode="use_background_thread"
-        ap:title="ECG Example"
-        ap:rangeTitle="range"
-        ap:domainTitle="domain"
+        app:renderMode="use_background_thread"
+        app:title="ECG Example"
+        app:rangeTitle="range"
+        app:domainTitle="domain"
+        android:layout_margin="22dp"
+        app:backgroundColor="#FAFAFA"
+        app:borderColor="#bebebe"
         />
 
     <ListView
@@ -20,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
-        android:paddingTop="36dp">
+        android:paddingTop="56dp">
     </ListView>
 
     <ImageButton
@@ -35,6 +38,7 @@
         android:id="@+id/tv_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="6dp"
         android:gravity="center"/>
 
 
