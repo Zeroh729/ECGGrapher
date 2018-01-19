@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ap="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:id="@+id/parent_view"
-    xmlns:ap="http://schemas.android.com/tools">
+    android:id="@+id/parent_view">
     <com.androidplot.xy.XYPlot
         android:id="@+id/plot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:renderMode="use_background_thread"
-        app:title="ECG Example"
-        app:rangeTitle="range"
-        app:domainTitle="domain"
-        android:layout_margin="22dp"
-        app:backgroundColor="#FAFAFA"
-        app:borderColor="#bebebe"
+        ap:renderMode="use_background_thread"
+        ap:title="ECG"
+        ap:legendVisible="false"
+        ap:domainOriginLineThickness="1dp"
+        ap:rangeOriginLineThickness="1dp"
+        ap:domainLineThickness="1dp"
+        ap:rangeLineThickness="1dp"
+        ap:domainStepMode="increment_by_pixels"
+        ap:rangeStepMode="increment_by_pixels"
+        ap:domainStep="10dp"
+        ap:rangeStep="10dp"
+        ap:graphBackgroundColor="#fff"
+        ap:backgroundColor="#fff"
+        ap:lineLabels="none"
+        ap:domainLineColor="@color/graph_line"
+        ap:domainOriginLineColor="@color/graph_line"
+        ap:rangeLineColor="@color/graph_line"
+        ap:rangeOriginLineColor="@color/graph_line"
+        ap:gridInsetLeft="0dp"
+        ap:gridInsetBottom="0dp"
+        style="@style/APDefacto.Light"
         />
 
     <ListView
@@ -34,6 +48,7 @@
         app:srcCompat="@drawable/ic_bluetooth_black_24dp"
         android:background="@android:color/transparent"
         />
+
     <TextView
         android:id="@+id/tv_status"
         android:layout_width="match_parent"

@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
+import android.zeroh729.com.ecggrapher.data.model.MockECGSeries;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
@@ -30,6 +31,7 @@ import android.zeroh729.com.ecggrapher.utils._;
 
 import com.androidplot.util.Redrawer;
 import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.XYPlot;
 
 import org.androidannotations.annotations.AfterViews;
@@ -76,7 +78,6 @@ public class MainActivity extends BaseActivity {
                 finish();
             }
         });
-
         plot.addSeries(series, new MyFadeFormatter(Constants.COUNT_X - 100));
         plot.setRangeBoundaries(0, Constants.COUNT_Y, BoundaryMode.FIXED);
         plot.setDomainBoundaries(0, Constants.COUNT_X, BoundaryMode.FIXED);

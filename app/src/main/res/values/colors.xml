@@ -9,6 +9,8 @@
     <color name="textPrimary">@android:color/white</color>
     <color name="windowBackground">@android:color/background_light</color>
 
+    <color name="graph_line">#e9e9e9</color>
+
     <color name="divider">#26000000</color>
     <color name="text_disabled">#42000000</color>
     <color name="text_hint">#42000000</color>

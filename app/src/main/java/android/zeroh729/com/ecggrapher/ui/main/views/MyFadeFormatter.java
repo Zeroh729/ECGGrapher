@@ -1,5 +1,6 @@
 package android.zeroh729.com.ecggrapher.ui.main.views;
 
+import android.graphics.Color;
 import android.graphics.Paint;
 
 import com.androidplot.xy.AdvancedLineAndPointRenderer;
@@ -10,6 +11,11 @@ public class MyFadeFormatter extends AdvancedLineAndPointRenderer.Formatter {
 
     public MyFadeFormatter(int trailSize) {
         this.trailSize = trailSize;
+        Paint p = new Paint();
+        p.setColor(Color.parseColor("#da1713"));
+        p.setStrokeWidth(2f);
+        p.setAntiAlias(true);
+        setLinePaint(p);
     }
 
     @Override
