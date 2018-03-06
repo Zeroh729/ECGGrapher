@@ -18,12 +18,12 @@ import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
-import android.zeroh729.com.ecggrapher.data.model.MockECGSeries;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
+import android.zeroh729.com.ecggrapher.interactors.MockBluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
-import android.zeroh729.com.ecggrapher.interactors.myHandler;
+import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
 import android.zeroh729.com.ecggrapher.ui.main.views.MyFadeFormatter;
@@ -31,7 +31,6 @@ import android.zeroh729.com.ecggrapher.utils._;
 
 import com.androidplot.util.Redrawer;
 import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.XYPlot;
 
 import org.androidannotations.annotations.AfterViews;
@@ -67,11 +66,15 @@ public class MainActivity extends BaseActivity {
 
     private ECGSeries series;
     private Redrawer redrawer;
+    private MockBluetoothDataHandler handler;
     private BluetoothService bluetoothService;
+    private ECGStoragePresenter ecgStoragePresenter;
 
     @AfterViews
     void afterviews(){
         series = new ECGSeries(plot);
+        ecgStoragePresenter = new ECGStoragePresenter();
+        ecgStoragePresenter.setup();
         btSystem.setup(this, new SimpleCallback() {
             @Override
             public void onReturn() {
@@ -84,9 +87,15 @@ public class MainActivity extends BaseActivity {
 
         // reduce the number of range labels
         plot.setLinesPerRangeLabel(3);
-        series.start();
         redrawer = new Redrawer(plot, 60, true);
         lv_devices.setAdapter(adapter);
+
+        if(_.ISDEBUG){
+            lv_devices.setVisibility(View.GONE);
+            ib_bt.setVisibility(View.GONE);
+            tv_status.setVisibility(View.GONE);
+            handler = new MockBluetoothDataHandler(this);
+        }
     }
 
     @Override
@@ -111,7 +120,6 @@ public class MainActivity extends BaseActivity {
         unregisterReceiver(btreceiver);
         if(redrawer != null)
         redrawer.finish();
-        series.stop();
 
         if (bluetoothService != null) {
             bluetoothService.stop();
@@ -170,7 +178,7 @@ public class MainActivity extends BaseActivity {
                 .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialog, int which) {
                         btSystem.cancelDiscovery();
-                        myHandler handler = new myHandler(MainActivity.this);
+                        handler = new MockBluetoothDataHandler(MainActivity.this);
                         bluetoothService = new BluetoothService(handler, device);
                         bluetoothService.connect();
                         lv_devices.setVisibility(View.GONE);
@@ -230,9 +238,10 @@ public class MainActivity extends BaseActivity {
     }
 
     public void receiveData(int data) {
-        _.log("Plotting :  " + data);
+//        _.log("Plotting :  " + data);
         if(data > 100) {
             series.addData(data);
+            ecgStoragePresenter.addDatapoint(data);
         }
     }
 

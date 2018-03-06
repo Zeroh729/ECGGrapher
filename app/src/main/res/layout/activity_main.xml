@@ -47,6 +47,7 @@
         android:scaleType="fitCenter"
         app:srcCompat="@drawable/ic_bluetooth_black_24dp"
         android:background="@android:color/transparent"
+
         />
 
     <TextView

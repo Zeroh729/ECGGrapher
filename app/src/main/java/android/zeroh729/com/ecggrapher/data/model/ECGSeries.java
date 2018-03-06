@@ -62,13 +62,6 @@ public class ECGSeries implements XYSeries {
         latestIndex++;
     }
 
-    public void start(){
-//        thread.start();
-    }
-    public void stop(){
-//        keepRunning = false;
-    }
-
     @Override
     public int size() {
         return data.length;

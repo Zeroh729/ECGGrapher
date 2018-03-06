@@ -5,6 +5,8 @@ import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.widget.Toast;
 
 public class _ {
+    public static boolean ISDEBUG = true;
+
     public static void showToast(String message){
         Toast.makeText(ECGGrapher_.getInstance().getContext(), message, Toast.LENGTH_SHORT).show();
     }

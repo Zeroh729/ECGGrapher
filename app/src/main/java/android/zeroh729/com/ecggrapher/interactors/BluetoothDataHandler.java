@@ -7,12 +7,14 @@ import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
 import android.zeroh729.com.ecggrapher.utils._;
 
+import com.androidplot.xy.AdvancedLineAndPointRenderer;
+
 import java.lang.ref.WeakReference;
 
-public class myHandler extends Handler {
+public class BluetoothDataHandler extends Handler {
     private final WeakReference<MainActivity> mActivity;
 
-    public myHandler(MainActivity activity) {
+    public BluetoothDataHandler(MainActivity activity) {
         mActivity = new WeakReference<>(activity);
     }
 
@@ -38,10 +40,10 @@ public class myHandler extends Handler {
                         if(message.contains("\n")){
                             String[] messages = message.split("\n");
 //                            for(String message2: messages){
-                                if(!messages[messages.length-1].trim().isEmpty()) {
-                                    int data = Integer.parseInt(messages[messages.length-1].trim());
-                                    activity.receiveData(data);
-                                }
+                            if(!messages[messages.length-1].trim().isEmpty()) {
+                                int data = Integer.parseInt(messages[messages.length-1].trim());
+                                activity.receiveData(data);
+                            }
 //                            }
                         }else{
                             int data = Integer.parseInt(message.trim());
@@ -54,5 +56,4 @@ public class myHandler extends Handler {
                 break;
         }
     }
-
 }
