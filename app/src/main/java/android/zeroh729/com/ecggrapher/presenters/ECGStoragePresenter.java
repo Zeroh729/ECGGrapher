@@ -33,7 +33,7 @@ public class ECGStoragePresenter implements BasePresenter {
         _.log("ECGStoragePresenter Initializing - Start time is " + startTime);
     }
 
-    public void addDatapoint(int data){
+    public void addDatapoint(double data){
         long elapsedTime = System.currentTimeMillis() - startTime;
         filelines += (elapsedTime + "," + data + "\n");
         filelinesCnt++;

@@ -47,7 +47,7 @@ public class ECGSeries implements XYSeries {
 //        });
     }
 
-    public void addData(int y){
+    public void addData(double y){
         if (latestIndex >= data.length) {
             latestIndex = 0;
         }

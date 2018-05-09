@@ -1,6 +1,7 @@
 package android.zeroh729.com.ecggrapher.ui.main.activities;
 
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -8,13 +9,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
@@ -40,6 +45,8 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
+
+import java.util.ArrayList;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseActivity {
@@ -72,6 +79,7 @@ public class MainActivity extends BaseActivity {
 
     @AfterViews
     void afterviews(){
+        checkPermissionsForBluetooth();
         series = new ECGSeries(plot);
         ecgStoragePresenter = new ECGStoragePresenter();
         ecgStoragePresenter.setup();
@@ -240,8 +248,9 @@ public class MainActivity extends BaseActivity {
     public void receiveData(int data) {
 //        _.log("Plotting :  " + data);
         if(data > 100) {
-            series.addData(data);
-            ecgStoragePresenter.addDatapoint(data);
+            double ddata = data/1024.00 * 5;
+            series.addData(ddata);
+            ecgStoragePresenter.addDatapoint(ddata);
         }
     }
 
@@ -250,5 +259,39 @@ public class MainActivity extends BaseActivity {
 //        lv_devices.setVisibility(View.VISIBLE);
 //        ib_bt.setVisibility(View.VISIBLE);
 //        tv_status.setVisibility(View.VISIBLE);
+    }
+
+    final int MY_PERMISSIONS_REQUEST = 20001;
+
+    private void checkPermissionsForBluetooth() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            String[] permissions = {Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE,
+                    Manifest.permission.INTERNET, Manifest.permission.READ_EXTERNAL_STORAGE};
+            ArrayList<String> permsToRequest = new ArrayList<>();
+
+
+            for(String p : permissions){
+                if(checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED){
+                    permsToRequest.add(p);
+                }
+            }
+
+                //            // Should we show an explanation?
+                //            if (shouldShowRequestPermissionRationale(
+                //                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                //                // Explain to the user why we need to read the contacts
+                //            }
+
+            if(permsToRequest.size() > 0) {
+                String[] permsArr = new String[permsToRequest.size()];
+                requestPermissions(permsToRequest.toArray(permsArr),
+                        MY_PERMISSIONS_REQUEST);
+            }
+                // MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE is an
+                // app-defined int constant that should be quite unique
+
+                return;
+        }
     }
 }
