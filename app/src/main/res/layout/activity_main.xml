@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:id="@+id/parent_view">
+
     <com.androidplot.xy.XYPlot
         android:id="@+id/plot"
         android:layout_width="match_parent"
@@ -22,12 +23,13 @@
         ap:rangeStep="10dp"
         ap:graphBackgroundColor="#fff"
         ap:backgroundColor="#fff"
-        ap:lineLabels="none"
+        ap:lineLabels="left"
+        ap:lineLabelInsetLeft="6dp"
         ap:domainLineColor="@color/graph_line"
         ap:domainOriginLineColor="@color/graph_line"
         ap:rangeLineColor="@color/graph_line"
         ap:rangeOriginLineColor="@color/graph_line"
-        ap:gridInsetLeft="0dp"
+        ap:gridInsetLeft="12dp"
         ap:gridInsetBottom="0dp"
         style="@style/APDefacto.Light"
         />

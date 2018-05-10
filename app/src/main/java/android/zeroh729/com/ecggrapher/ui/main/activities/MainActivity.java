@@ -23,6 +23,7 @@ import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
+import android.zeroh729.com.ecggrapher.interactors.BluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.MockBluetoothDataHandler;
@@ -73,28 +74,27 @@ public class MainActivity extends BaseActivity {
 
     private ECGSeries series;
     private Redrawer redrawer;
-    private MockBluetoothDataHandler handler;
+    private BluetoothDataHandler handler;
     private BluetoothService bluetoothService;
     private ECGStoragePresenter ecgStoragePresenter;
 
     @AfterViews
     void afterviews(){
         checkPermissionsForBluetooth();
+
         series = new ECGSeries(plot);
         ecgStoragePresenter = new ECGStoragePresenter();
         ecgStoragePresenter.setup();
+        plot.addSeries(series, new MyFadeFormatter(Constants.COUNT_X - 100));
+        plot.setRangeBoundaries(0, Constants.COUNT_Y, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(0, Constants.COUNT_X, BoundaryMode.FIXED);
         btSystem.setup(this, new SimpleCallback() {
             @Override
             public void onReturn() {
                 finish();
             }
         });
-        plot.addSeries(series, new MyFadeFormatter(Constants.COUNT_X - 100));
-        plot.setRangeBoundaries(0, Constants.COUNT_Y, BoundaryMode.FIXED);
-        plot.setDomainBoundaries(0, Constants.COUNT_X, BoundaryMode.FIXED);
 
-        // reduce the number of range labels
-        plot.setLinesPerRangeLabel(3);
         redrawer = new Redrawer(plot, 60, true);
         lv_devices.setAdapter(adapter);
 
@@ -102,7 +102,7 @@ public class MainActivity extends BaseActivity {
             lv_devices.setVisibility(View.GONE);
             ib_bt.setVisibility(View.GONE);
             tv_status.setVisibility(View.GONE);
-            handler = new MockBluetoothDataHandler(this);
+//            handler = new MockBluetoothDataHandler(this);
         }
     }
 
@@ -186,7 +186,7 @@ public class MainActivity extends BaseActivity {
                 .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialog, int which) {
                         btSystem.cancelDiscovery();
-                        handler = new MockBluetoothDataHandler(MainActivity.this);
+                        handler = new BluetoothDataHandler(MainActivity.this);
                         bluetoothService = new BluetoothService(handler, device);
                         bluetoothService.connect();
                         lv_devices.setVisibility(View.GONE);
@@ -265,7 +265,7 @@ public class MainActivity extends BaseActivity {
 
     private void checkPermissionsForBluetooth() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            String[] permissions = {Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.BLUETOOTH,
+            String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE,
                     Manifest.permission.INTERNET, Manifest.permission.READ_EXTERNAL_STORAGE};
             ArrayList<String> permsToRequest = new ArrayList<>();
