@@ -31,12 +31,10 @@ android {
 dependencies {
     final RETROFIT_VERSION = '2.1.0'
     final SUPPORT_LIBRARY_VERSION = '26.+'
-
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
     annotationProcessor "org.androidannotations:otto:$AAVersion"
     implementation "org.androidannotations:androidannotations-api:$AAVersion"
-
     implementation "com.android.support:support-v4:$SUPPORT_LIBRARY_VERSION"
     implementation "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
     implementation "com.android.support:cardview-v7:$SUPPORT_LIBRARY_VERSION"
@@ -45,7 +43,8 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'de.hdodenhof:circleimageview:2.1.0'
     implementation 'com.squareup:otto:1.3.8'
-    implementation "com.androidplot:androidplot-core:1.5.3"
+    implementation 'com.androidplot:androidplot-core:1.5.3'
+    implementation files('libs/ECGAnalyzer.jar')
 }
 
 

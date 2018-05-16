@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -27,6 +28,7 @@ import android.zeroh729.com.ecggrapher.interactors.BluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.MockBluetoothDataHandler;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
@@ -45,9 +47,14 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OnActivityResult;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
+
+import ecganal.Callback.ECGAnalysisCallback;
+import ecganal.ECGAnalyzer;
+import ecganal.Model.ECGSummary;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseActivity {
@@ -74,7 +81,7 @@ public class MainActivity extends BaseActivity {
 
     private ECGSeries series;
     private Redrawer redrawer;
-    private BluetoothDataHandler handler;
+    private Handler handler;
     private BluetoothService bluetoothService;
     private ECGStoragePresenter ecgStoragePresenter;
 
@@ -101,8 +108,7 @@ public class MainActivity extends BaseActivity {
         if(_.ISDEBUG){
             lv_devices.setVisibility(View.GONE);
             ib_bt.setVisibility(View.GONE);
-            tv_status.setVisibility(View.GONE);
-//            handler = new MockBluetoothDataHandler(this);
+            handler = new MockBluetoothDataHandler(this);
         }
     }
 
@@ -186,6 +192,7 @@ public class MainActivity extends BaseActivity {
                 .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialog, int which) {
                         btSystem.cancelDiscovery();
+
                         handler = new BluetoothDataHandler(MainActivity.this);
                         bluetoothService = new BluetoothService(handler, device);
                         bluetoothService.connect();
@@ -250,8 +257,33 @@ public class MainActivity extends BaseActivity {
         if(data > 100) {
             double ddata = data/1024.00 * 5;
             series.addData(ddata);
-            ecgStoragePresenter.addDatapoint(ddata);
+            ecgStoragePresenter.addDatapoint(ddata, fileCallback);
         }
+    }
+
+    private DataCallback<String> fileCallback = new DataCallback<String>() {
+        @Override
+        public void onUpdate(String data) {
+            ECGAnalyzer.getInstance().analyzeData(data, analCallback);
+        }
+    };
+
+    private ECGAnalysisCallback analCallback = new ECGAnalysisCallback() {
+        @Override
+        public void onSuccess(ECGSummary ecgSummary) {
+            displaySummary(ecgSummary);
+        }
+
+        @Override
+        public void onFail(String s) {
+
+        }
+    };
+
+    @UiThread
+    void displaySummary(ECGSummary summary){
+        tv_status.setText("BPM: " + summary.getBPM());
+
     }
 
     public void disconnected() {

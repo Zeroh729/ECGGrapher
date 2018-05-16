@@ -31,6 +31,7 @@ public class MockBluetoothDataHandler extends Handler {
                         if(dummydataIndex >= dummydata.length-1){
                             dummydataIndex = 0;
                         }
+                        _.log(""+dummydata[dummydataIndex++]);
                         activity.receiveData(dummydata[dummydataIndex++]);
 
                         Thread.sleep(delayMs);

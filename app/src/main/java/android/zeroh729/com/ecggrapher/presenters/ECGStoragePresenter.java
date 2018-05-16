@@ -2,6 +2,7 @@ package android.zeroh729.com.ecggrapher.presenters;
 
 import android.os.Environment;
 import android.zeroh729.com.ecggrapher.interactors.ECGStorageSystem;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
 import android.zeroh729.com.ecggrapher.presenters.base.BasePresenter;
 import android.zeroh729.com.ecggrapher.utils.DateFormatter;
 import android.zeroh729.com.ecggrapher.utils._;
@@ -33,11 +34,12 @@ public class ECGStoragePresenter implements BasePresenter {
         _.log("ECGStoragePresenter Initializing - Start time is " + startTime);
     }
 
-    public void addDatapoint(double data){
+    public void addDatapoint(double data, DataCallback<String> callback){
         long elapsedTime = System.currentTimeMillis() - startTime;
         filelines += (elapsedTime + "," + data + "\n");
         filelinesCnt++;
         if(filelinesCnt >= 1000){
+            callback.onUpdate(filelines);
             String fileLocation = Environment.getExternalStorageDirectory().getPath()+"/ECGData";
             String filename = DateFormatter.formatyyyyMMddHHmmss(startDate.getTime())+".txt";
             _.log("ECGStoragePresenter Preparing to store file in " + fileLocation
@@ -48,6 +50,11 @@ public class ECGStoragePresenter implements BasePresenter {
             storageSystem.saveStringToFile(fileLocation, filename, filelines);
             init();
         }
+    }
+
+    public void saveSummary(){
+        String fileLocation = Environment.getExternalStorageDirectory().getPath()+"/ECGData";
+        String filename = DateFormatter.formatyyyyMMddHHmmss(startDate.getTime())+"-summary.txt";
     }
 
     @Override
