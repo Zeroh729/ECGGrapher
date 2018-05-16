@@ -34,27 +34,28 @@ public class ECGStoragePresenter implements BasePresenter {
         _.log("ECGStoragePresenter Initializing - Start time is " + startTime);
     }
 
-    public void addDatapoint(double data, DataCallback<String> callback){
+    public int addDatapoint(double data){
         long elapsedTime = System.currentTimeMillis() - startTime;
         filelines += (elapsedTime + "," + data + "\n");
         filelinesCnt++;
-        if(filelinesCnt >= 1000){
-            callback.onUpdate(filelines);
-            String fileLocation = Environment.getExternalStorageDirectory().getPath()+"/ECGData";
-            String filename = DateFormatter.formatyyyyMMddHHmmss(startDate.getTime())+".txt";
-            _.log("ECGStoragePresenter Preparing to store file in " + fileLocation
-                    + "\nFilename: " + filename
-                    + "\nData:" + filelines.substring(0,300)
-                    + "\n...");
-
-            storageSystem.saveStringToFile(fileLocation, filename, filelines);
-            init();
-        }
+        return filelinesCnt;
     }
 
-    public void saveSummary(){
+    public String getFileLines(){
+        return filelines;
+    }
+
+    public String saveECGData(){
         String fileLocation = Environment.getExternalStorageDirectory().getPath()+"/ECGData";
-        String filename = DateFormatter.formatyyyyMMddHHmmss(startDate.getTime())+"-summary.txt";
+        String filename = DateFormatter.formatyyyyMMddHHmmss(startDate.getTime());
+        _.log("ECGStoragePresenter Preparing to store file in " + fileLocation
+                + "\nFilename: " + filename
+                + "\nData:" + filelines.substring(0,300)
+                + "\n...");
+
+        storageSystem.saveStringToFile(fileLocation, filename+".txt", filelines);
+        init();
+        return filename;
     }
 
     @Override
@@ -65,6 +66,12 @@ public class ECGStoragePresenter implements BasePresenter {
     @Override
     public void setState(int state) {
 
+    }
+
+    public void saveECGSummary(String filename, String summaryFile) {
+        String fileLocation = Environment.getExternalStorageDirectory().getPath()+"/ECGData";
+        filename += "-summary.txt";
+        storageSystem.saveStringToFile(fileLocation, filename, summaryFile);
     }
 
     public interface StorageSystem{

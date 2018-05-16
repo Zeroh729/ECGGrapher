@@ -254,31 +254,33 @@ public class MainActivity extends BaseActivity {
 
     public void receiveData(int data) {
 //        _.log("Plotting :  " + data);
-        if(data > 100) {
+        if(data > 100) { //receiving threshold = 100
             double ddata = data/1024.00 * 5;
             series.addData(ddata);
-            ecgStoragePresenter.addDatapoint(ddata, fileCallback);
+            int datacnt = ecgStoragePresenter.addDatapoint(ddata);
+
+            if(datacnt >= Constants.ECG_DATA_LIMIT){
+                final String filelines = ecgStoragePresenter.getFileLines();
+                final String filename = ecgStoragePresenter.saveECGData();
+                ECGAnalyzer.getInstance().analyzeData(filelines, new ECGAnalysisCallback() {
+                    @Override
+                    public void onSuccess(ECGSummary ecgSummary) {
+                        displaySummary(ecgSummary);
+                        String summaryFile = "Summary for " + filename + "\n"
+                                            + "bpm: " + ecgSummary.getBPM() + "\n";
+                        ecgStoragePresenter.saveECGSummary(filename, summaryFile);
+                    }
+
+                    @Override
+                    public void onFail(String s) {
+
+                    }
+                });
+            }
+
         }
     }
 
-    private DataCallback<String> fileCallback = new DataCallback<String>() {
-        @Override
-        public void onUpdate(String data) {
-            ECGAnalyzer.getInstance().analyzeData(data, analCallback);
-        }
-    };
-
-    private ECGAnalysisCallback analCallback = new ECGAnalysisCallback() {
-        @Override
-        public void onSuccess(ECGSummary ecgSummary) {
-            displaySummary(ecgSummary);
-        }
-
-        @Override
-        public void onFail(String s) {
-
-        }
-    };
 
     @UiThread
     void displaySummary(ECGSummary summary){

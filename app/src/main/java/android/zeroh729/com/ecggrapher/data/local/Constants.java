@@ -3,6 +3,8 @@ package android.zeroh729.com.ecggrapher.data.local;
 import java.util.UUID;
 
 public interface Constants {
+    int ECG_DATA_LIMIT = 1000;
+
     int COUNT_Y = 5;
     int COUNT_X = 300;
 
