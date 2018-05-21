@@ -257,6 +257,24 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    @Click(R.id.ib_close)
+    void onClickClose(){
+        new AlertDialog.Builder(MainActivity.this)
+                .setCancelable(false)
+                .setTitle("Disonnect")
+                .setMessage("Are you sure you want to disconnect?")
+                .setPositiveButton("Disconnect", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialog, int which) {
+                        disconnected();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialog, int which) {
+                        _.log("Cancelled ");
+                    }
+                }).show();
+    }
+
     public void receiveData(int data) {
 //        _.log("Plotting :  " + data);
         if(data > 100) { //receiving threshold = 100
@@ -294,7 +312,10 @@ public class MainActivity extends BaseActivity {
     }
 
     public void disconnected() {
-        bluetoothService.stop();
+        if (bluetoothService != null) {
+            bluetoothService.stop();
+            bluetoothService = null;
+        }
         lv_devices.setVisibility(View.VISIBLE);
         ib_bt.setVisibility(View.VISIBLE);
         tv_status.setText("");

@@ -32,6 +32,7 @@
         <receiver android:name="android.zeroh729.com.ecggrapher.utils.receivers.NetworkChangeReceiver_" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="ACTION_" />
             </intent-filter>
         </receiver>
 
