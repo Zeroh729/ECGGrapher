@@ -157,7 +157,11 @@ public class MainActivity extends BaseActivity {
                 }
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                tv_status.setText("None");
+                if(adapter.getCount() == 0){
+                    tv_status.setText("No devices found");
+                }else{
+                    tv_status.setText("");
+                }
             } else if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 switch (state) {
@@ -198,7 +202,7 @@ public class MainActivity extends BaseActivity {
                         bluetoothService.connect();
                         lv_devices.setVisibility(View.GONE);
                         ib_bt.setVisibility(View.GONE);
-                        tv_status.setVisibility(View.GONE);
+                        tv_status.setText("reading...");
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -227,7 +231,7 @@ public class MainActivity extends BaseActivity {
     private SuccessCallback btCallback = new SuccessCallback() {
         @Override
         public void onSuccess() {
-            tv_status.setText("Loading...");
+            tv_status.setText("Searching...");
         }
 
         @Override
@@ -246,6 +250,7 @@ public class MainActivity extends BaseActivity {
     void onClickBluetooth(){
         if (btSystem.isBTEnabled()) {
             btSystem.startSearching(btCallback);
+            tv_status.setText("searching...");
         } else {
             tv_status.setText("Enabling bluetooth");
             btSystem.enableBluetooth(this);
@@ -290,9 +295,9 @@ public class MainActivity extends BaseActivity {
 
     public void disconnected() {
         bluetoothService.stop();
-//        lv_devices.setVisibility(View.VISIBLE);
-//        ib_bt.setVisibility(View.VISIBLE);
-//        tv_status.setVisibility(View.VISIBLE);
+        lv_devices.setVisibility(View.VISIBLE);
+        ib_bt.setVisibility(View.VISIBLE);
+        tv_status.setText("");
     }
 
     final int MY_PERMISSIONS_REQUEST = 20001;
