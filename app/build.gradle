@@ -3,7 +3,6 @@ def AAVersion = '4.4.0'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '27.0.3'
 
     dexOptions {
         preDexLibraries true
@@ -60,7 +59,7 @@ buildscript {
     }
     dependencies {
         // replace with the current version of the Android plugin
-        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath 'com.android.tools.build:gradle:3.4.2'
     }
 }
 

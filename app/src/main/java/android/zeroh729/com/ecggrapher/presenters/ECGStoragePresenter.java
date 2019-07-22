@@ -53,7 +53,7 @@ public class ECGStoragePresenter implements BasePresenter {
                 + "\nData:" + filelines.substring(0,300)
                 + "\n...");
 
-        storageSystem.saveStringToFile(fileLocation, filename+".txt", filelines);
+        storageSystem.saveStringToFile(fileLocation, filename+".csv", filelines);
         init();
         return filename;
     }

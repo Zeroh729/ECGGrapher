@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
+import android.zeroh729.com.ecggrapher.data.local.SharedPrefHelper;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
@@ -72,6 +73,9 @@ public class MainActivity extends BaseActivity {
 
     @ViewById
     ListView lv_devices;
+
+    @ViewById
+    View view_popup_warning;
 
     @Bean
     BluetoothSystem btSystem;
@@ -246,6 +250,20 @@ public class MainActivity extends BaseActivity {
         }
     };
 
+    @Click(R.id.view_popup_warning)
+    void onClickWarning(){
+        String filename = SharedPrefHelper.getInstance(this).getString(Constants.PREFS_MOST_RECENT_AFIB_FILENAME);
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("AFib symptom detected")
+                .setMessage("The most recent ecg record with RR intervals deviating from the standard is at " + filename + ".\nCheck up with your doctor for precautionary measures.")
+                .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
+
     @Click(R.id.ib_bt)
     void onClickBluetooth(){
         if (btSystem.isBTEnabled()) {
@@ -276,11 +294,10 @@ public class MainActivity extends BaseActivity {
     }
 
     public void receiveData(int data) {
-//        _.log("Plotting :  " + data);
         if(data > 100) { //receiving threshold = 100
             double ddata = data/1024.00 * 5;
             series.addData(ddata);
-            int datacnt = ecgStoragePresenter.addDatapoint(ddata);
+            int datacnt = ecgStoragePresenter.addDatapoint(data);
 
             if(datacnt >= Constants.ECG_DATA_LIMIT){
                 final String filelines = ecgStoragePresenter.getFileLines();
@@ -291,6 +308,10 @@ public class MainActivity extends BaseActivity {
                         displaySummary(ecgSummary);
                         String summaryFile = "Summary for " + filename + "\n"
                                             + "bpm: " + ecgSummary.getBPM() + "\n";
+                        if(ecgSummary.getDeviatingRRIcount() > 0){
+                            summaryFile += "Deviating RRI count : " + ecgSummary.getDeviatingRRIcount() + "\n";
+                            displayWarning(ecgSummary, filename);
+                        }
                         ecgStoragePresenter.saveECGSummary(filename, summaryFile);
                     }
 
@@ -307,8 +328,19 @@ public class MainActivity extends BaseActivity {
 
     @UiThread
     void displaySummary(ECGSummary summary){
-        tv_status.setText("BPM: " + summary.getBPM());
+        String bpmNote  = "";
+        if(summary.getBPM() < 60){
+            bpmNote = "Sinus Bradycardia";
+        }else if (summary.getBPM() >= 101 && summary.getBPM() <= 180){
+            bpmNote = "Sinus Tachycardia";
+        }
+        tv_status.setText("BPM: " + summary.getBPM() + (!bpmNote.isEmpty() ? " - " + bpmNote : ""));
+    }
 
+    @UiThread
+    void displayWarning(ECGSummary summary, String filename){
+        view_popup_warning.setVisibility(View.VISIBLE);
+        SharedPrefHelper.getInstance(this).putString(Constants.PREFS_MOST_RECENT_AFIB_FILENAME, filename);
     }
 
     public void disconnected() {

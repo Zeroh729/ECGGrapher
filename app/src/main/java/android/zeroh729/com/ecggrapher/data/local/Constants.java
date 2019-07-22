@@ -8,6 +8,8 @@ public interface Constants {
     int COUNT_Y = 5;
     int COUNT_X = 300;
 
+    String PREFS_MOST_RECENT_AFIB_FILENAME = "PREFS_MOST_RECENT_AFIB_FILENAME";
+
     String TAG = "Arduino - Android";
     int REQUEST_ENABLE_BT = 1;
 
@@ -29,7 +31,6 @@ public interface Constants {
     // Key names received from the BluetoothChatService Handler
     String EXTRA_DEVICE  = "EXTRA_DEVICE";
     String SNACKBAR = "toast";
-
 
 }
 
