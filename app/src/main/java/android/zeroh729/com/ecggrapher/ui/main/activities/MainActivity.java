@@ -30,6 +30,7 @@ import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
+import android.zeroh729.com.ecggrapher.interactors.EmergencyContactSystem;
 import android.zeroh729.com.ecggrapher.interactors.MockBluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
@@ -85,6 +86,8 @@ public class MainActivity extends BaseActivity {
 
     @Bean
     BluetoothDevicesAdapter adapter;
+
+    EmergencyContactSystem emergencyContactSystem;
 
     private ECGSeries series;
     private Redrawer redrawer;
@@ -261,9 +264,26 @@ public class MainActivity extends BaseActivity {
         new AlertDialog.Builder(MainActivity.this)
                 .setTitle("AFib symptom detected")
                 .setMessage("The most recent ecg record with RR intervals deviating from the standard is at " + filename + ".\nCheck up with your doctor for precautionary measures.")
-                .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
+                    }
+                })
+                .setPositiveButton("Send SMS to Emergency Contact", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        emergencyContactSystem = new EmergencyContactSystem();
+                        emergencyContactSystem.sendSMS("I need your help! My heart is not feeling well.", new SuccessCallback() {
+                            @Override
+                            public void onSuccess() {
+                                _.log("SMS sent!");
+                            }
+
+                            @Override
+                            public void onFail() {
+                                _.log("SMS failed to send.");
+                            }
+                        });
                     }
                 })
                 .show();
@@ -364,7 +384,7 @@ public class MainActivity extends BaseActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE,
-                    Manifest.permission.INTERNET, Manifest.permission.READ_EXTERNAL_STORAGE};
+                    Manifest.permission.INTERNET, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.SEND_SMS};
             ArrayList<String> permsToRequest = new ArrayList<>();
 
 

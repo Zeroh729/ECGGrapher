@@ -1,6 +1,7 @@
 package android.zeroh729.com.ecggrapher.presenters;
 
 import android.zeroh729.com.ecggrapher.interactors.EmergencyContactSystem;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.presenters.base.BasePresenter;
 
 public class EmergencyContactPresenter implements BasePresenter{
@@ -34,6 +35,7 @@ public class EmergencyContactPresenter implements BasePresenter{
     public interface ContactSystem{
         void saveEmContact(String phonenum);
         String getEmContact();
+        void sendSMS(String msg, SuccessCallback onSuccess);
     }
 
     public interface ContactScreen{
