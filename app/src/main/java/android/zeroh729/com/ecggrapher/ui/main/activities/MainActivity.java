@@ -9,11 +9,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageButton;
@@ -35,6 +37,7 @@ import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
+import android.zeroh729.com.ecggrapher.ui.main.fragments.EmergencyContactFragment;
 import android.zeroh729.com.ecggrapher.ui.main.views.MyFadeFormatter;
 import android.zeroh729.com.ecggrapher.utils._;
 
@@ -92,6 +95,7 @@ public class MainActivity extends BaseActivity {
     @AfterViews
     void afterviews(){
         checkPermissionsForBluetooth();
+        showEmergencyContactView();
 
         series = new ECGSeries(plot);
         ecgStoragePresenter = new ECGStoragePresenter();
@@ -383,8 +387,13 @@ public class MainActivity extends BaseActivity {
             }
                 // MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE is an
                 // app-defined int constant that should be quite unique
+        }
+    }
 
-                return;
+    private void showEmergencyContactView(){
+        if(SharedPrefHelper.getInstance(this).getString(Constants.PREFS_EMERGENCY_CONTACT).equals("")){
+            EmergencyContactFragment frag = new EmergencyContactFragment();
+            frag.show(getFragmentManager(), "emcontact_dialog");
         }
     }
 }
