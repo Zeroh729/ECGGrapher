@@ -122,6 +122,7 @@ public class MainActivity extends BaseActivity {
         _.log("Registering receiver");
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(btreceiver, filter);
@@ -175,7 +176,7 @@ public class MainActivity extends BaseActivity {
                                     @Override public void onClick(View v) {
                                         btSystem.enableBluetooth(MainActivity.this);
                                     }
-                                }).show();
+                                }).setDuration(Snackbar.LENGTH_SHORT).show();
                         break;
                     case BluetoothAdapter.STATE_TURNING_ON:
                         tv_status.setText("Turning On...");

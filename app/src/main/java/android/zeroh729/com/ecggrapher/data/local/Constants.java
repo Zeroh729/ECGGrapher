@@ -9,6 +9,7 @@ public interface Constants {
     int COUNT_X = 300;
 
     String PREFS_MOST_RECENT_AFIB_FILENAME = "PREFS_MOST_RECENT_AFIB_FILENAME";
+    String PREFS_EMERGENCY_CONTACT = "PREFS_EMERGENCY_CONTACT";
 
     String TAG = "Arduino - Android";
     int REQUEST_ENABLE_BT = 1;
@@ -24,7 +25,6 @@ public interface Constants {
     int STATE_ERROR = 1;
     int STATE_CONNECTING = 2; // now initiating an outgoing connection
     int STATE_CONNECTED = 3;  // now connected to a remote device
-
 
     UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
