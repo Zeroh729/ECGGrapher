@@ -10,6 +10,9 @@ import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
+import android.zeroh729.com.ecggrapher.ECGGrapher;
+import android.zeroh729.com.ecggrapher.ECGGrapher_;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
@@ -21,7 +24,8 @@ import org.androidannotations.annotations.ItemClick;
 
 @EBean
 public class BluetoothSystem {
-    private BluetoothAdapter btadapter;
+    private BluetoothService bluetoothService;
+    public BluetoothAdapter btadapter;
     public static final int REQCODE_ENABlE_BT = 20221;
 
     public void setup(Context context, final SimpleCallback failcallback) {
@@ -38,6 +42,30 @@ public class BluetoothSystem {
                             failcallback.onReturn();
                         }
                     }).show();
+        }
+    }
+
+    public String getDeviceName(){
+        if(bluetoothService != null){
+            return bluetoothService.myDevice.getName();
+        }
+        return "";
+    }
+
+    public BluetoothSystem pairToDevice(AbstractBluetoothDataHandler handler, BluetoothDevice device){
+        bluetoothService = new BluetoothService(handler, device);
+        return this;
+    }
+
+    public void start(){
+        if(bluetoothService != null)
+            bluetoothService.connect();
+    }
+
+    public void stop(){
+        if(bluetoothService != null) {
+            bluetoothService.stop();
+            bluetoothService = null;
         }
     }
 

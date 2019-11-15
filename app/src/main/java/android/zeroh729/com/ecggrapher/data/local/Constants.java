@@ -11,7 +11,7 @@ public interface Constants {
     String PREFS_MOST_RECENT_AFIB_FILENAME = "PREFS_MOST_RECENT_AFIB_FILENAME";
     String PREFS_EMERGENCY_CONTACT = "PREFS_EMERGENCY_CONTACT";
 
-    String TAG = "Arduino - Android";
+    String TAG = "WARDS";
     int REQUEST_ENABLE_BT = 1;
 
     // message types sent from the BluetoothChatService Handler

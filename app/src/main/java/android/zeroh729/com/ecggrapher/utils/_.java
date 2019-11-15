@@ -3,6 +3,7 @@ package android.zeroh729.com.ecggrapher.utils;
 import android.util.Log;
 import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.widget.Toast;
+import android.zeroh729.com.ecggrapher.data.local.Constants;
 
 public class _ {
     public static boolean ISDEBUG = true;
@@ -12,10 +13,10 @@ public class _ {
     }
 
     public static void log(String message){
-        Log.d("TEST", message);
+        Log.d(Constants.TAG, message);
     }
 
     public static void logError(String message){
-        Log.e("TEST", message);
+        Log.e(Constants.TAG, message);
     }
 }

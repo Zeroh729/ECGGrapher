@@ -75,7 +75,7 @@ public class EmergencyContactFragment extends DialogFragment implements Emergenc
 
     @Override
     public void showSavedConfirmationScreen(String phonenum) {
-        tv_confirm_message.setText("Emergency contact "  + phonenum + "saved.\nYou can change this later in the settings.");
+        tv_confirm_message.setText("Emergency contact "  + phonenum + " saved.\nYou can change this later in the settings.");
         view_add_phonenum.setVisibility(View.GONE);
         view_confirm.setVisibility(View.VISIBLE);
     }

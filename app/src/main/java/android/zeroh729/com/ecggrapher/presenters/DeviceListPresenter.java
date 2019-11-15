@@ -1,15 +1,14 @@
 package android.zeroh729.com.ecggrapher.presenters;
 
-import android.zeroh729.com.ecggrapher.interactors.DataListSystem;
 import android.zeroh729.com.ecggrapher.presenters.base.BasePresenter;
 
-public class DataListPresenter implements BasePresenter {
-    private Screen screen;
-    private System system;
+public class DeviceListPresenter implements BasePresenter {
+    private DeviceListScreen screen;
+    private DeviceListSystem system;
 
-    public DataListPresenter(Screen screen) {
+    public DeviceListPresenter(DeviceListScreen screen) {
         this.screen = screen;
-        system = new DataListSystem();
+//        system = new DeviceListSystem();
     }
 
     @Override
@@ -27,11 +26,11 @@ public class DataListPresenter implements BasePresenter {
 
     }
 
-    public interface Screen {
+    public interface DeviceListScreen {
 
     }
 
-    public interface System {
+    public interface DeviceListSystem {
 
     }
 }
