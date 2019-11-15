@@ -62,6 +62,7 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(btreceiver, filter);
+        presenter = new DeviceListPresenter(this);
     }
 
     @Override
@@ -72,7 +73,6 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
 
     @AfterViews
     void afterviews(){
-        presenter = new DeviceListPresenter(this);
         lv_devices.setAdapter(adapter);
     }
 

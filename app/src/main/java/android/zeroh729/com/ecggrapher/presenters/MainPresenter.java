@@ -50,6 +50,7 @@ public class MainPresenter implements BasePresenter {
 
         ecgStoragePresenter = new ECGStoragePresenter();
         ecgStoragePresenter.setup();
+        setState(STATE_CONNECTED);
     }
 
     private void displayFailedToConnect(){
@@ -65,7 +66,7 @@ public class MainPresenter implements BasePresenter {
     public void updateState() {
         switch(this.state){
             case STATE_CONNECTED:
-                screen.displayGraphingView();
+                screen.displayGraphingView(btSystem.getDeviceName());
                 break;
             case STATE_CONNECTING:
                 screen.displayConnectingView();
@@ -81,6 +82,8 @@ public class MainPresenter implements BasePresenter {
             case STATE_FINISHED:
                 if(!_.ISDEBUG)
                     btSystem.connectionStop();
+                else
+                    handler = null;
                 break;
         }
     }
@@ -164,7 +167,7 @@ public class MainPresenter implements BasePresenter {
 
         void displayDisconnectedView();
 
-        void displayGraphingView();
+        void displayGraphingView(String deviceName);
 
         void displayLaggingView();
 

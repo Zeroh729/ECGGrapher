@@ -48,6 +48,8 @@ public class SettingsDialogFragment extends DialogFragment {
             onClickDisconnect.onReturn();
         });
 
+        ib_close.setOnClickListener(v -> dismiss());
+
         builder.setView(view);
         builder.setCancelable(false);
         return builder.create();

@@ -6,7 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="56dp"
     android:paddingLeft="24dp"
+    app:title="Settings"
     app:popupTheme="@style/AppTheme.OverflowMenu"
-    android:background="@color/primary">
+    app:theme="@style/ToolbarTheme"
+    app:titleTextColor="@color/primary"
+    android:background="#FFF">
 
 </android.support.v7.widget.Toolbar>

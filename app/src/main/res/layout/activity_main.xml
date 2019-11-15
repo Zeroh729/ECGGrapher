@@ -12,7 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         ap:renderMode="use_background_thread"
-        ap:title="ECG"
         ap:legendVisible="false"
         ap:domainOriginLineThickness="1dp"
         ap:rangeOriginLineThickness="1dp"
@@ -33,14 +32,17 @@
         ap:gridInsetLeft="12dp"
         ap:gridInsetBottom="0dp"
         style="@style/APDefacto.Light"
+        android:layout_marginTop="12dp"
         />
 
     <ImageButton
         android:id="@+id/ib_settings"
         android:layout_width="36dp"
         android:layout_height="36dp"
+        android:layout_margin="8dp"
         android:scaleType="fitCenter"
         app:srcCompat="@drawable/ic_settings"
+        android:layout_alignParentBottom="true"
         android:background="@android:color/transparent"/>
 
 

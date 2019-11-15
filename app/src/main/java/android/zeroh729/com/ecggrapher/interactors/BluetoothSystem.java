@@ -49,6 +49,9 @@ public class BluetoothSystem {
         if(bluetoothService != null){
             return bluetoothService.myDevice.getName();
         }
+        if(_.ISDEBUG){
+            return "Simulated Data";
+        }
         return "";
     }
 

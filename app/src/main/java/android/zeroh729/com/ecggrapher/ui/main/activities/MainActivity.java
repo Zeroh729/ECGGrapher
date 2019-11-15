@@ -74,8 +74,9 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
 
     MainPresenter presenter;
 
-    @AfterViews
-    void afterviews(){
+    @Override
+    protected void onStart() {
+        super.onStart();
         presenter = new MainPresenter(this, btDevice);
         series = new ECGSeries(plot);
         plot.addSeries(series, new MyFadeFormatter(Constants.COUNT_X - 100));
@@ -148,8 +149,8 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
     }
 
     @Override
-    public void displayGraphingView() {
-
+    public void displayGraphingView(String deviceName) {
+        plot.setTitle("Connected to " + deviceName);
     }
 
     @Override
