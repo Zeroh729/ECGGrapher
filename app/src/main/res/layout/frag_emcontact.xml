@@ -6,6 +6,130 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <LinearLayout
+        android:id="@+id/view_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_welcome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="32dp"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Welcome to WARDS app!"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" What's your name?"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center"
+            android:textSize="22sp"
+            android:textColor="@color/text_primary"/>
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="32dp"
+            android:ems="10"
+            android:lines="1"
+            android:gravity="center"
+            android:inputType="textPersonName"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:textSize="24sp"
+            android:layout_gravity="center"/>
+
+        <Button
+            android:id="@+id/btn_confirm_name"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="54dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="32dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:text="DONE"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/view_enter_num"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/tv_greeting_wname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hi Jeh!"
+            android:layout_marginTop="32dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textColor="@color/text_primary"
+            android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/tv_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="In case of emergencies, this app would send a SMS message to your preferred emergency contact."
+            android:textColor="@color/text_primary"
+            android:layout_gravity="center"/>
+
+        <EditText
+            android:id="@+id/et_phonenum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="32dp"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="09XXXXXXXXX"
+            android:inputType="phone"
+            android:maxLength="11"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:textSize="24sp"
+            android:layout_gravity="center"/>
+
+        <Button
+            android:id="@+id/btn_add"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="54dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="32dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:text="Add emergency contact"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/view_confirm"
         android:visibility="gone"
@@ -45,61 +169,4 @@
             android:text="Ok" />
     </LinearLayout>
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/view_enter_num"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-            <TextView
-                android:id="@+id/tv_caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="32dp"
-                android:layout_marginEnd="32dp"
-                android:gravity="center"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:text="In case of emergencies, this app would send a SMS message to your preferred emergency contact."
-                android:textColor="@color/text_primary"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <EditText
-                android:id="@+id/et_phonenum"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="32dp"
-                android:ems="10"
-                android:gravity="center"
-                android:hint="09XXXXXXXXX"
-                android:inputType="phone"
-                android:maxLength="11"
-                android:selectAllOnFocus="true"
-                android:singleLine="true"
-                android:textSize="24sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv_caption" />
-
-            <Button
-                android:id="@+id/btn_add"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="54dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginBottom="32dp"
-                android:paddingLeft="24dp"
-                android:paddingRight="24dp"
-                android:text="Add emergency contact"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/et_phonenum" />
-
-    </android.support.constraint.ConstraintLayout>
 </FrameLayout>

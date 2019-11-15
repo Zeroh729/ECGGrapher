@@ -57,12 +57,12 @@ public class BluetoothSystem {
         return this;
     }
 
-    public void start(){
+    public void connectionStart(){
         if(bluetoothService != null)
             bluetoothService.connect();
     }
 
-    public void stop(){
+    public void connectionStop(){
         if(bluetoothService != null) {
             bluetoothService.stop();
             bluetoothService = null;

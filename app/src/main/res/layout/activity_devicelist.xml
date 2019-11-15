@@ -5,24 +5,78 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:id="@+id/parent_view">
+    android:id="@+id/parent_view"
+    android:padding="16dp">
+
+    <ImageButton
+        android:id="@+id/ib_settings"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/ic_settings"
+        android:layout_alignParentRight="true"
+        android:background="@android:color/transparent"/>
+
+    <TextView
+        android:id="@+id/tv_label_step1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Step 1"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+    <TextView
+        android:id="@+id/tv_caption_step1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_label_step1"
+        android:text="Turn on Bluetooth on wearable device."
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    <TextView
+        android:id="@+id/tv_label_step2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_caption_step1"
+        android:text="Step 2"
+        android:layout_marginTop="32dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+    <TextView
+        android:id="@+id/tv_caption_step2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_label_step2"
+        android:text="Turn on this phone's Bluetooth and connect to wearable device."
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+
+    <Button
+        android:id="@+id/btn_bt"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:layout_below="@id/tv_caption_step2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="12dp"
+        android:layout_marginLeft="28dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="28dp"
+        android:layout_marginBottom="12dp"
+        android:drawableLeft="@drawable/ic_bluetooth_black_24dp"
+        android:scaleType="fitCenter"
+        android:text="Turn on bluetooth" />
 
     <ListView
         android:id="@+id/lv_devices"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
-        android:paddingTop="56dp">
+        android:paddingTop="56dp"
+        android:layout_below="@+id/btn_bt">
     </ListView>
-
-    <ImageButton
-        android:id="@+id/ib_bt"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:scaleType="fitCenter"
-        app:srcCompat="@drawable/ic_bluetooth_black_24dp"
-        android:background="@android:color/transparent"
-        />
 
     <TextView
         android:id="@+id/tv_status"
@@ -30,7 +84,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
         android:textSize="22sp"
-        android:layout_alignParentBottom="true"
-        android:gravity="center_horizontal"
+        android:layout_alignTop="@id/lv_devices"
+        android:layout_alignBottom="@id/lv_devices"
+        android:gravity="center"
         />
 </RelativeLayout>

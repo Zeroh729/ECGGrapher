@@ -30,6 +30,7 @@ import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
 import android.zeroh729.com.ecggrapher.presenters.MainPresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
+import android.zeroh729.com.ecggrapher.ui.main.fragments.SettingsDialogFragment;
 import android.zeroh729.com.ecggrapher.ui.main.views.MyFadeFormatter;
 import android.zeroh729.com.ecggrapher.utils._;
 
@@ -115,22 +116,10 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
         presenter.onClickWarning();
     }
 
-    @Click(R.id.ib_close)
-    void onClickClose(){
-        new AlertDialog.Builder(MainActivity.this)
-                .setCancelable(false)
-                .setTitle("Disonnect")
-                .setMessage("Are you sure you want to disconnect?")
-                .setPositiveButton("Disconnect", new DialogInterface.OnClickListener() {
-                    @Override public void onClick(DialogInterface dialog, int which) {
-                        disconnected();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override public void onClick(DialogInterface dialog, int which) {
-                        _.log("Cancelled ");
-                    }
-                }).show();
+
+    @Click(R.id.ib_settings)
+    void onClickSettings(){
+        presenter.onClickSettings();
     }
 
     @UiThread
@@ -185,7 +174,6 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
 
     @Override
     public void displayWarningDialog(String message, SimpleCallback smsPressedCallback) {
-
         new AlertDialog.Builder(MainActivity.this)
                 .setTitle("AFib symptom detected")
                 .setMessage(message)
@@ -197,7 +185,7 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
                 .setPositiveButton("Send SMS to Emergency Contact", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-
+                        smsPressedCallback.onReturn();
                     }
                 })
                 .show();
@@ -207,4 +195,26 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
     public void graphECGdata(double ddata) {
         series.addData(ddata);
     }
+
+    @Override
+    public void displaySettingsDialog() {
+        SettingsDialogFragment frag = new SettingsDialogFragment();
+        frag.setOnClickDisconnect(onClickDisconnect);
+        frag.setOnClickGotosettings(onClickGotoSettings);
+        frag.show(getFragmentManager(), "settings_dialog");
+    }
+
+    SimpleCallback onClickDisconnect = new SimpleCallback() {
+        @Override
+        public void onReturn() {
+            presenter.setState(MainPresenter.STATE_DISCONNECTED);
+        }
+    };
+
+    SimpleCallback onClickGotoSettings = new SimpleCallback() {
+        @Override
+        public void onReturn() {
+            SettingsActivity_.intent(MainActivity.this).start();
+        }
+    };
 }

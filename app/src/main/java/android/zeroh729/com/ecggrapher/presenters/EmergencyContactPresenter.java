@@ -32,14 +32,24 @@ public class EmergencyContactPresenter implements BasePresenter{
         screen.showSavedConfirmationScreen(system.getEmContact());
     }
 
+    public void onAddUsername() {
+        String username = screen.getUsername();
+        system.saveUsername(username);
+        screen.showAddEmergencyForm(username);
+    }
+
     public interface ContactSystem{
         void saveEmContact(String phonenum);
-        String getEmContact();
+        void saveUsername(String username);
         void sendSMS(String msg, SuccessCallback onSuccess);
+        String getEmContact();
+        String getUsername();
     }
 
     public interface ContactScreen{
         void onClickAddEmergencyContact();
         void showSavedConfirmationScreen(String phonenum);
+        String getUsername();
+        void showAddEmergencyForm(String username);
     }
 }

@@ -11,28 +11,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.presenters.EmergencyContactPresenter;
-import android.zeroh729.com.ecggrapher.utils._;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.ViewById;
 
 @EFragment
 public class EmergencyContactFragment extends DialogFragment implements EmergencyContactPresenter.ContactScreen {
     EmergencyContactPresenter presenter;
 
     private View view;
+    EditText et_name;
+    Button btn_confirm_name;
+
     TextView tv_confirm_message;
+    TextView tv_greetings_wname;
     EditText et_phonenum;
     Button btn_add;
     Button btn_ok;
     View view_add_phonenum;
     View view_confirm;
+    View view_username;
 
     @NonNull
     @Override
@@ -46,10 +46,18 @@ public class EmergencyContactFragment extends DialogFragment implements Emergenc
 
         view_add_phonenum = view.findViewById(R.id.view_enter_num);
         view_confirm = view.findViewById(R.id.view_confirm);
+        view_username = view.findViewById(R.id.view_username);
         tv_confirm_message = view.findViewById(R.id.tv_confirm_message);
+        et_name = view.findViewById(R.id.et_name);
+        btn_confirm_name = view.findViewById(R.id.btn_confirm_name);
+        tv_greetings_wname  = view.findViewById(R.id.tv_greeting_wname);
         et_phonenum = view.findViewById(R.id.et_phonenum);
         btn_add = view.findViewById(R.id.btn_add);
         btn_ok = view.findViewById(R.id.btn_ok);
+
+        btn_confirm_name.setOnClickListener(view -> {
+            presenter.onAddUsername();
+        });
 
         btn_add.setOnClickListener(view -> onClickAddEmergencyContact());
 
@@ -78,6 +86,18 @@ public class EmergencyContactFragment extends DialogFragment implements Emergenc
         tv_confirm_message.setText("Emergency contact "  + phonenum + " saved.\nYou can change this later in the settings.");
         view_add_phonenum.setVisibility(View.GONE);
         view_confirm.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public String getUsername() {
+        return et_name.getText().toString();
+    }
+
+    @Override
+    public void showAddEmergencyForm(String username) {
+        tv_greetings_wname.setText("Hi " + username + "!");
+        view_username.setVisibility(View.GONE);
+        view_add_phonenum.setVisibility(View.VISIBLE);
     }
 }
 

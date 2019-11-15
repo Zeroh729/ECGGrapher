@@ -45,7 +45,7 @@ public class MainPresenter implements BasePresenter {
         }else{
             handler = new BluetoothDataHandler(screen.getContext());
             btSystem.pairToDevice(handler, device);
-            btSystem.start();
+            btSystem.connectionStart();
         }
 
         ecgStoragePresenter = new ECGStoragePresenter();
@@ -76,11 +76,11 @@ public class MainPresenter implements BasePresenter {
             case STATE_DISCONNECTED:
                 screen.displayDisconnectedView();
                 if(!_.ISDEBUG)
-                    btSystem.stop();
+                    btSystem.connectionStop();
                 break;
             case STATE_FINISHED:
                 if(!_.ISDEBUG)
-                    btSystem.stop();
+                    btSystem.connectionStop();
                 break;
         }
     }
@@ -106,10 +106,10 @@ public class MainPresenter implements BasePresenter {
         String dialogMessage = "The most recent ecg record with RR intervals deviating from the standard is at " + filename + ".\nCheck up with your doctor for precautionary measures.";
         screen.displayWarningDialog(dialogMessage, () -> {
             emContactSystem = new EmergencyContactSystem();
-            emContactSystem.sendSMS("I need your help! My heart is not feeling well.", new SuccessCallback() {
+            emContactSystem.sendSMS("This is an automatic message from WARDS app. " + emContactSystem.getUsername() + "'s heart may be in critical condition. Send help ASAP!", new SuccessCallback() {
                 @Override
                 public void onSuccess() {
-                    _.showToast("SMS sent!");
+                    _.showToast("SMS sent to "+emContactSystem.getEmContact()+"!");
                 }
 
                 @Override
@@ -153,6 +153,10 @@ public class MainPresenter implements BasePresenter {
         }
     }
 
+    public void onClickSettings() {
+        screen.displaySettingsDialog();
+    }
+
     public interface MainScreen{
         void finish();
 
@@ -173,5 +177,7 @@ public class MainPresenter implements BasePresenter {
         void displayWarningDialog(String message, SimpleCallback smsPressedCallback);
 
         void graphECGdata(double ddata);
+
+        void displaySettingsDialog();
     }
 }

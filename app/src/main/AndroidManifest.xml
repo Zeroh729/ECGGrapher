@@ -24,6 +24,9 @@
             android:screenOrientation="landscape">
         </activity>
 
+        <activity android:name="android.zeroh729.com.ecggrapher.ui.main.activities.SettingsActivity_">
+        </activity>
+
         <activity android:name="android.zeroh729.com.ecggrapher.ui.main.activities.DeviceListActivity_"
             android:label="WARD ECG Grapher">
             <intent-filter>
