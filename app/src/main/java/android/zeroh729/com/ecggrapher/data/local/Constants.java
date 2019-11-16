@@ -24,8 +24,9 @@ public interface Constants {
     // Constants that indicate the current connection state
     int STATE_NONE = 0;       // we're doing nothing
     int STATE_ERROR = 1;
-    int STATE_CONNECTING = 2; // now initiating an outgoing connection
-    int STATE_CONNECTED = 3;  // now connected to a remote device
+    int STATE_CONNECTION_LOST = 2;
+    int STATE_CONNECTING = 3; // now initiating an outgoing connection
+    int STATE_CONNECTED = 4;  // now connected to a remote device
 
     UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 

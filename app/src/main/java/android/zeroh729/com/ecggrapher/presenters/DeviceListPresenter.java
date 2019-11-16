@@ -3,9 +3,12 @@ package android.zeroh729.com.ecggrapher.presenters;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.presenters.base.BasePresenter;
+
+import java.util.Set;
 
 public class DeviceListPresenter implements BasePresenter {
     public final static int
@@ -29,17 +32,24 @@ public class DeviceListPresenter implements BasePresenter {
         this.screen.showEmergencyContactView();
 
         btSystem = new BluetoothSystem();
-        btSystem.setup(screen.getContext(), new SimpleCallback() {
+        btSystem.setup(new SuccessCallback() {
             @Override
-            public void onReturn() {
-                setState(STATE_BT_ERROR); //not sure if disco or error
+            public void onSuccess() {
+                if(btSystem.isBTEnabled()){
+                    setState(STATE_BT_ON);
+                }else{
+                    setState(STATE_BT_OFF);
+                }
+                for (BluetoothDevice device : btSystem.getCurrentlyPairedDevices()){
+                    screen.addDeviceToList(device);
+                }
+            }
+
+            @Override
+            public void onFail() {
+                setState(STATE_BT_ERROR);
             }
         });
-        if(btSystem.isBTEnabled()){
-            setState(STATE_BT_ON);
-        }else{
-            setState(STATE_BT_OFF);
-        }
     }
 
     @Override
@@ -55,7 +65,7 @@ public class DeviceListPresenter implements BasePresenter {
     public void updateState() {
         switch (state){
             case STATE_BT_ERROR:
-                screen.finishActivity();
+                screen.displayBluetoothSetupError();
                 break;
 
             case STATE_BT_ON:
@@ -162,6 +172,7 @@ public class DeviceListPresenter implements BasePresenter {
         void goToMainActivity(BluetoothDevice device);
         void finishActivity();
 
+        void displayBluetoothSetupError();
     }
 
     public interface DeviceListSystem {

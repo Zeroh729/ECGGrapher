@@ -13,6 +13,7 @@ import android.view.View;
 import android.zeroh729.com.ecggrapher.ECGGrapher;
 import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothDataHandler;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
@@ -22,26 +23,21 @@ import android.zeroh729.com.ecggrapher.utils._;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.ItemClick;
 
+import java.util.Set;
+
 @EBean
 public class BluetoothSystem {
     private BluetoothService bluetoothService;
     public BluetoothAdapter btadapter;
     public static final int REQCODE_ENABlE_BT = 20221;
 
-    public void setup(Context context, final SimpleCallback failcallback) {
+    public void setup(SuccessCallback callback) {
         btadapter = BluetoothAdapter.getDefaultAdapter();
 
-        if (btadapter == null) {
-            _.logError("Device has no bluetooth");
-            new AlertDialog.Builder(context)
-                    .setCancelable(false)
-                    .setTitle("No Bluetooth")
-                    .setMessage("Your device has no bluetooth")
-                    .setPositiveButton("Close app", new DialogInterface.OnClickListener() {
-                        @Override public void onClick(DialogInterface dialog, int which) {
-                            failcallback.onReturn();
-                        }
-                    }).show();
+        if (btadapter != null) {
+            callback.onSuccess();
+        }else{
+            callback.onFail();
         }
     }
 
@@ -94,4 +90,7 @@ public class BluetoothSystem {
     }
 
 
+    public Set<BluetoothDevice> getCurrentlyPairedDevices() {
+        return btadapter.getBondedDevices();
+    }
 }

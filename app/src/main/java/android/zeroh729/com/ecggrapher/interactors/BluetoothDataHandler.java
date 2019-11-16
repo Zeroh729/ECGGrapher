@@ -29,6 +29,8 @@ public class BluetoothDataHandler extends AbstractBluetoothDataHandler {
             case Constants.MESSAGE_STATE_CHANGE:
                 switch (msg.arg1) {
                     case Constants.STATE_NONE:
+                    case Constants.STATE_CONNECTION_LOST:
+                    case Constants.STATE_ERROR:
                         _.log("Disconnected");
                         activity.disconnected();
                         break;

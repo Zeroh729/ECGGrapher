@@ -138,6 +138,11 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
     }
 
     @Override
+    public void finishActivity() {
+        finish();
+    }
+
+    @Override
     public MainActivity getContext() {
         return this;
     }
@@ -159,8 +164,8 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
     }
 
     @Override
-    public void displayConnectingView() {
-
+    public void displayConnectingView(String statusMsg) {
+        tv_status.setText(statusMsg);
     }
 
     @Override

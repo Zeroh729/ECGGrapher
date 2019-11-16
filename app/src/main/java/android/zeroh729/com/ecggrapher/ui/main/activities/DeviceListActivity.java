@@ -54,8 +54,8 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
     DeviceListPresenter presenter;
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -63,6 +63,11 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(btreceiver, filter);
         presenter = new DeviceListPresenter(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -228,6 +233,18 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
     @Override
     public void finishActivity() {
         finish();
+    }
+
+    @Override
+    public void displayBluetoothSetupError() {
+        new android.app.AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle("No Bluetooth")
+                .setMessage("Your device has no bluetooth")
+                .setPositiveButton("Close app", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).show();
     }
 
 

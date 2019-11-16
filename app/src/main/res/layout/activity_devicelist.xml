@@ -74,7 +74,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
-        android:paddingTop="56dp"
         android:layout_below="@+id/btn_bt">
     </ListView>
 

@@ -18,7 +18,7 @@ import java.util.UUID;
  */
 public class BluetoothService {
 
-    private Handler myHandler;
+    private Handler btDataHandler;
     private int state;
 
     BluetoothDevice myDevice;
@@ -28,7 +28,7 @@ public class BluetoothService {
 
     public BluetoothService(Handler handler, BluetoothDevice device) {
         state = Constants.STATE_NONE;
-        myHandler = handler;
+        btDataHandler = handler;
         myDevice = device;
     }
 
@@ -51,7 +51,7 @@ public class BluetoothService {
         Log.d(Constants.TAG, "setState() " + this.state + " -> " + state);
         this.state = state;
         // Give the new state to the Handler so the UI Activity can update
-        myHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        btDataHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
 
     public synchronized int getState() {
@@ -76,11 +76,11 @@ public class BluetoothService {
     private void connectionFailed() {
         Log.e(Constants.TAG, "Connection Failed");
         // Send a failure item_message back to the Activity
-        Message msg = myHandler.obtainMessage(Constants.MESSAGE_SNACKBAR);
+        Message msg = btDataHandler.obtainMessage(Constants.MESSAGE_SNACKBAR);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.SNACKBAR, "Unable to connect");
         msg.setData(bundle);
-        myHandler.sendMessage(msg);
+        btDataHandler.sendMessage(msg);
         setState(Constants.STATE_ERROR);
         cancelConnectThread();
     }
@@ -91,12 +91,12 @@ public class BluetoothService {
     private void connectionLost() {
         Log.e(Constants.TAG, "Connection Lost");
         // Send a failure item_message back to the Activity
-        Message msg = myHandler.obtainMessage(Constants.MESSAGE_SNACKBAR);
+        Message msg = btDataHandler.obtainMessage(Constants.MESSAGE_SNACKBAR);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.SNACKBAR, "Cconnection was lost");
         msg.setData(bundle);
-        myHandler.sendMessage(msg);
-        setState(Constants.STATE_ERROR);
+        btDataHandler.sendMessage(msg);
+        setState(Constants.STATE_CONNECTION_LOST);
         cancelConnectedThread();
     }
 
@@ -174,7 +174,7 @@ public class BluetoothService {
                 connectThread = null;
             }
 
-            // Do work to manage the connection (in a separate thread)
+            // When connection with device starts, another thread runs for managing data
             connected(mmSocket, mmDevice);
         }
 
@@ -229,7 +229,7 @@ public class BluetoothService {
 
                     if (read.contains("\n")) {
 
-                        myHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, readMessage.toString()).sendToTarget();
+                        btDataHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, readMessage.toString()).sendToTarget();
                         readMessage.setLength(0);
                     }
 
@@ -246,7 +246,7 @@ public class BluetoothService {
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
-                myHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, bytes).sendToTarget();
+                btDataHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, bytes).sendToTarget();
             } catch (IOException e) {
                 Log.e(Constants.TAG, "Exception during write", e);
             }

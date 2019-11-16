@@ -34,27 +34,27 @@ public class MainPresenter implements BasePresenter {
         // By reaching MainActivity, BT device should already have been selected by User
         this.screen = screen;
         btSystem = new BluetoothSystem();
-        btSystem.setup(screen.getContext(), new SimpleCallback() {
+        btSystem.setup(new SuccessCallback() {
             @Override
-            public void onReturn() {
-                displayFailedToConnect();
+            public void onSuccess() {
+                if(_.ISDEBUG){
+                    handler = new MockBluetoothDataHandler(screen.getContext());
+                }else{
+                    handler = new BluetoothDataHandler(screen.getContext());
+                    btSystem.pairToDevice(handler, device);
+                    btSystem.connectionStart();
+                }
+
+                ecgStoragePresenter = new ECGStoragePresenter();
+                ecgStoragePresenter.setup();
+                setState(STATE_CONNECTING);
+            }
+
+            @Override
+            public void onFail() {
+                screen.finishActivity();
             }
         });
-        if(_.ISDEBUG){
-            handler = new MockBluetoothDataHandler(screen.getContext());
-        }else{
-            handler = new BluetoothDataHandler(screen.getContext());
-            btSystem.pairToDevice(handler, device);
-            btSystem.connectionStart();
-        }
-
-        ecgStoragePresenter = new ECGStoragePresenter();
-        ecgStoragePresenter.setup();
-        setState(STATE_CONNECTED);
-    }
-
-    private void displayFailedToConnect(){
-        screen.finish();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class MainPresenter implements BasePresenter {
                 screen.displayGraphingView(btSystem.getDeviceName());
                 break;
             case STATE_CONNECTING:
-                screen.displayConnectingView();
+                screen.displayConnectingView("Connecting to " + btSystem.getDeviceName());
                 break;
             case STATE_LAGGING:
                 screen.displayLaggingView();
@@ -161,7 +161,7 @@ public class MainPresenter implements BasePresenter {
     }
 
     public interface MainScreen{
-        void finish();
+        void finishActivity();
 
         MainActivity getContext();
 
@@ -171,7 +171,7 @@ public class MainPresenter implements BasePresenter {
 
         void displayLaggingView();
 
-        void displayConnectingView();
+        void displayConnectingView(String statusMsg);
 
         void setSummaryText(String s);
 
