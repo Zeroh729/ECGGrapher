@@ -12,47 +12,48 @@ import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothD
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.presenters.base.BasePresenter;
+import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
 import android.zeroh729.com.ecggrapher.utils._;
+
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EBean;
 
 import ecganal.Callback.ECGAnalysisCallback;
 import ecganal.ECGAnalyzer;
 import ecganal.Model.ECGSummary;
 
+@EBean
 public class MainPresenter implements BasePresenter {
     public static final int STATE_CONNECTING = 0, STATE_CONNECTED = 1, STATE_LAGGING = 2, STATE_DISCONNECTED = 3, STATE_FINISHED = 4;
     private int state;
 
     BluetoothSystem btSystem;
+
     MainScreen screen;
-    private AbstractBluetoothDataHandler handler;
     private ECGStoragePresenter ecgStoragePresenter;
     private EmergencyContactSystem emContactSystem;
     private SharedPrefHelper sharedPrefHelper = SharedPrefHelper.getInstance(ECGGrapher_.getInstance());
 
-    public MainPresenter(MainScreen screen, BluetoothDevice device) {
+    public MainPresenter() {
+        btSystem = BluetoothSystem.getInstance();
+    }
+
+    public void setup(MainScreen screen) {
         // By reaching MainActivity, BT device should already have been selected by User
         this.screen = screen;
-        btSystem = new BluetoothSystem();
-        btSystem.setup(new SuccessCallback() {
+        btSystem.setup(screen.getContext(), new SuccessCallback() {
             @Override
             public void onSuccess() {
-                if(_.ISDEBUG){
-                    handler = new MockBluetoothDataHandler(screen.getContext());
-                }else{
-                    handler = new BluetoothDataHandler(screen.getContext());
-                    btSystem.pairToDevice(handler, device);
-                    btSystem.connectionStart();
-                }
-
                 ecgStoragePresenter = new ECGStoragePresenter();
                 ecgStoragePresenter.setup();
-                setState(STATE_CONNECTING);
+                setState(STATE_CONNECTED);
+                _.log("MainPresenter : " + btSystem.getDeviceName());
             }
 
             @Override
             public void onFail() {
-                screen.finishActivity();
+                setState(STATE_DISCONNECTED);
             }
         });
     }
@@ -66,24 +67,20 @@ public class MainPresenter implements BasePresenter {
     public void updateState() {
         switch(this.state){
             case STATE_CONNECTED:
-                screen.displayGraphingView(btSystem.getDeviceName());
+                screen.displayGraphingView("Connected to " + btSystem.getDeviceName());
                 break;
             case STATE_CONNECTING:
-                screen.displayConnectingView("Connecting to " + btSystem.getDeviceName());
+                screen.displayConnectingView("Connecting to " + btSystem.getDeviceName() + "...");
                 break;
             case STATE_LAGGING:
                 screen.displayLaggingView();
                 break;
             case STATE_DISCONNECTED:
                 screen.displayDisconnectedView();
-                if(!_.ISDEBUG)
-                    btSystem.connectionStop();
+                btSystem.connectionStop();
                 break;
             case STATE_FINISHED:
-                if(!_.ISDEBUG)
-                    btSystem.connectionStop();
-                else
-                    handler = null;
+                btSystem.connectionStop();
                 break;
         }
     }
@@ -124,7 +121,7 @@ public class MainPresenter implements BasePresenter {
     }
 
     public void receiveData(int data) {
-        if(data > 100) { //receiving threshold = 100
+        if(data > 100 || !_.ISFILTERED) { //receiving threshold = 100
             double ddata = data/1024.00 * 5;
             screen.graphECGdata(ddata);
             int datacnt = ecgStoragePresenter.addDatapoint(data);
@@ -163,7 +160,7 @@ public class MainPresenter implements BasePresenter {
     public interface MainScreen{
         void finishActivity();
 
-        MainActivity getContext();
+        BaseBluetoothActivity getContext();
 
         void displayDisconnectedView();
 

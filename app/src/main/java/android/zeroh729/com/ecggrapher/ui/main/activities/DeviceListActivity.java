@@ -1,6 +1,7 @@
 package android.zeroh729.com.ecggrapher.ui.main.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -22,6 +23,8 @@ import android.zeroh729.com.ecggrapher.data.local.SharedPrefHelper;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.presenters.DeviceListPresenter;
+import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
+import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
 import android.zeroh729.com.ecggrapher.ui.main.fragments.EmergencyContactFragment;
 import android.zeroh729.com.ecggrapher.utils._;
@@ -35,7 +38,7 @@ import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 
 @EActivity(R.layout.activity_devicelist)
-public class DeviceListActivity extends AppCompatActivity implements DeviceListPresenter.DeviceListScreen {
+public class DeviceListActivity extends BaseBluetoothActivity implements DeviceListPresenter.DeviceListScreen {
     @ViewById
     RelativeLayout parent_view;
 
@@ -51,7 +54,10 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
     @Bean
     BluetoothDevicesAdapter adapter;
 
+    @Bean
     DeviceListPresenter presenter;
+
+    ProgressDialog dialog;
 
     @Override
     protected void onResume() {
@@ -62,7 +68,8 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(btreceiver, filter);
-        presenter = new DeviceListPresenter(this);
+        presenter = new DeviceListPresenter();
+        presenter.setup(this);
     }
 
     @Override
@@ -140,7 +147,7 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
     }
 
     @Override
-    public Activity getContext() {
+    public BaseBluetoothActivity getContext() {
         return this;
     }
 
@@ -161,6 +168,14 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
             adapter.add(device);
             adapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void displayListedDevices(boolean isVisible) {
+        if(isVisible)
+            lv_devices.setVisibility(View.VISIBLE);
+        else
+            lv_devices.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -221,13 +236,27 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
     }
 
     @Override
+    public void displayConnectingIndicator(String statusMsg) {
+        dialog = ProgressDialog.show(this, "",
+                statusMsg, true);
+    }
+
+    @Override
+    public void displayConnectedToDevice(boolean isSuccess, String statusMsg) {
+        if(dialog != null && dialog.isShowing()){
+            dialog.dismiss();
+        }
+        _.showToast(statusMsg);
+    }
+
+    @Override
     public void displayError(String error) {
         _.showToast(error);
     }
 
     @Override
-    public void goToMainActivity(BluetoothDevice device) {
-        MainActivity_.intent(DeviceListActivity.this).extra("btDevice",device).start();
+    public void goToMainActivity() {
+        MainActivity_.intent(DeviceListActivity.this).start();
     }
 
     @Override
@@ -248,4 +277,24 @@ public class DeviceListActivity extends AppCompatActivity implements DeviceListP
     }
 
 
+    @Override
+    public void displayDisconnectedView() {
+
+    }
+
+    @Override
+    public void connected() {
+        presenter.setState(DeviceListPresenter.STATE_BT_CONNECTED);
+    }
+
+    @Override
+    public void disconnected() {
+        dialog.dismiss();
+        presenter.setState(DeviceListPresenter.STATE_BT_CONNECT_FAIL);
+    }
+
+    @Override
+    public void receiveData(int data) {
+
+    }
 }

@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothDataHandler;
+import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
 import android.zeroh729.com.ecggrapher.utils._;
 
@@ -14,14 +15,14 @@ import java.lang.ref.WeakReference;
 import java.util.logging.LogRecord;
 
 public class BluetoothDataHandler extends AbstractBluetoothDataHandler {
-    public BluetoothDataHandler(MainActivity activity) {
+    public BluetoothDataHandler(BaseBluetoothActivity activity) {
         super(activity);
     }
 
     @Override
     public void handleMessage(Message msg) {
-        final MainActivity activity = mActivity.get();
-        _.log("Received data!");
+        final BaseBluetoothActivity activity = mActivity.get();
+        _.log("Received data! " + msg.what);
         switch (msg.what) {
             case Constants.MESSAGE_SNACKBAR:
                 activity.displayDisconnectedView();
@@ -29,10 +30,14 @@ public class BluetoothDataHandler extends AbstractBluetoothDataHandler {
             case Constants.MESSAGE_STATE_CHANGE:
                 switch (msg.arg1) {
                     case Constants.STATE_NONE:
-                    case Constants.STATE_CONNECTION_LOST:
                     case Constants.STATE_ERROR:
-                        _.log("Disconnected");
+                    case Constants.STATE_CONNECTION_LOST:
+                        _.log("MESSAGE_STATE_CHANGE : err - " + msg.arg1);
                         activity.disconnected();
+                        break;
+                    case Constants.STATE_CONNECTED:
+                        _.log("MESSAGE_STATE_CHANGE : Connected");
+                        activity.connected();
                         break;
                 }
                 break;

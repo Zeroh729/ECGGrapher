@@ -1,43 +1,51 @@
 package android.zeroh729.com.ecggrapher.interactors;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.view.View;
-import android.zeroh729.com.ecggrapher.ECGGrapher;
-import android.zeroh729.com.ecggrapher.ECGGrapher_;
+import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothDataHandler;
-import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
-import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
-import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
-import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
+import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.utils._;
 
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.ItemClick;
 
 import java.util.Set;
 
-@EBean
 public class BluetoothSystem {
-    private BluetoothService bluetoothService;
-    public BluetoothAdapter btadapter;
+    private static BluetoothSystem INSTANCE;
+    private static BluetoothService bluetoothService;
+    private static BluetoothAdapter btadapter;
+
     public static final int REQCODE_ENABlE_BT = 20221;
+    private static AbstractBluetoothDataHandler btDataHandler;
+    private BaseBluetoothActivity activity;
 
-    public void setup(SuccessCallback callback) {
-        btadapter = BluetoothAdapter.getDefaultAdapter();
+    public static BluetoothSystem getInstance(){
+        if(INSTANCE == null)
+            INSTANCE = new BluetoothSystem();
 
-        if (btadapter != null) {
-            callback.onSuccess();
+        return INSTANCE;
+    }
+
+    public void setup(BaseBluetoothActivity activity, SuccessCallback callback) {
+        this.activity = activity;
+        if(bluetoothService != null && bluetoothService.getState() == Constants.STATE_CONNECTED) {
+            if(btDataHandler!=null) {
+                btDataHandler.setBaseBluetoothActivity(this.activity);
+                callback.onSuccess();
+            }else{
+                callback.onFail();
+            }
         }else{
-            callback.onFail();
+            btadapter = BluetoothAdapter.getDefaultAdapter();
+            if (btadapter != null) {
+                callback.onSuccess();
+            } else {
+                callback.onFail();
+            }
         }
     }
 
@@ -51,8 +59,11 @@ public class BluetoothSystem {
         return "";
     }
 
-    public BluetoothSystem pairToDevice(AbstractBluetoothDataHandler handler, BluetoothDevice device){
-        bluetoothService = new BluetoothService(handler, device);
+    public BluetoothSystem pairToDevice(BluetoothDevice device){
+        //TODO ADD DEBUG MODE
+        btDataHandler = new BluetoothDataHandler(activity);
+        bluetoothService = new BluetoothService(btDataHandler, device);
+        connectionStart();
         return this;
     }
 

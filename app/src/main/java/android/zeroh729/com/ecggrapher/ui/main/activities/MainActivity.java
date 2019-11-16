@@ -29,6 +29,7 @@ import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
 import android.zeroh729.com.ecggrapher.presenters.MainPresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
+import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
 import android.zeroh729.com.ecggrapher.ui.main.fragments.SettingsDialogFragment;
 import android.zeroh729.com.ecggrapher.ui.main.views.MyFadeFormatter;
@@ -53,7 +54,7 @@ import ecganal.ECGAnalyzer;
 import ecganal.Model.ECGSummary;
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends BaseActivity implements MainPresenter.MainScreen {
+public class MainActivity extends BaseBluetoothActivity implements MainPresenter.MainScreen {
     @ViewById
     RelativeLayout parent_view;
 
@@ -66,18 +67,17 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
     @ViewById
     View view_popup_warning;
 
-    @Extra
-    BluetoothDevice btDevice;
-
     private ECGSeries series;
     private Redrawer redrawer;
 
+    @Bean
     MainPresenter presenter;
 
     @Override
     protected void onStart() {
         super.onStart();
-        presenter = new MainPresenter(this, btDevice);
+        presenter = new MainPresenter();
+        presenter.setup(this);
         series = new ECGSeries(plot);
         plot.addSeries(series, new MyFadeFormatter(Constants.COUNT_X - 100));
         plot.setRangeBoundaries(0, Constants.COUNT_Y, BoundaryMode.FIXED);
@@ -154,8 +154,8 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
     }
 
     @Override
-    public void displayGraphingView(String deviceName) {
-        plot.setTitle("Connected to " + deviceName);
+    public void displayGraphingView(String statusMsg) {
+        plot.setTitle(statusMsg);
     }
 
     @Override
@@ -165,7 +165,7 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
 
     @Override
     public void displayConnectingView(String statusMsg) {
-        tv_status.setText(statusMsg);
+        plot.setTitle(statusMsg);
     }
 
     @Override
@@ -223,4 +223,8 @@ public class MainActivity extends BaseActivity implements MainPresenter.MainScre
             SettingsActivity_.intent(MainActivity.this).start();
         }
     };
+
+    public void connected() {
+        presenter.setState(MainPresenter.STATE_CONNECTED);
+    }
 }
