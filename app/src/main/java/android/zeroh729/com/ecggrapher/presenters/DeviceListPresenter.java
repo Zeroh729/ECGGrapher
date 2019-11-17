@@ -1,6 +1,7 @@
 package android.zeroh729.com.ecggrapher.presenters;
 
 import android.bluetooth.BluetoothDevice;
+import android.zeroh729.com.ecggrapher.data.model.BluetoothDeviceItem;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
@@ -9,6 +10,9 @@ import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.utils._;
 
 import org.androidannotations.annotations.EBean;
+
+import static android.zeroh729.com.ecggrapher.data.local.Constants.DEMO_DEVICE_ADDRESS;
+import static android.zeroh729.com.ecggrapher.data.local.Constants.DEMO_DEVICE_NAME;
 
 @EBean
 public class DeviceListPresenter implements BasePresenter {
@@ -39,17 +43,13 @@ public class DeviceListPresenter implements BasePresenter {
         this.screen.checkPermissionsForBluetooth();
         this.screen.showEmergencyContactView();
 
-        btSystem = new BluetoothSystem();
-        btSystem.setup(screen.getContext(), new SuccessCallback() {
+        btSystem.setup(new SuccessCallback() {
             @Override
             public void onSuccess() {
                 if(btSystem.isBTEnabled()){
                     setState(STATE_BT_ON);
                 }else{
                     setState(STATE_BT_OFF);
-                }
-                for (BluetoothDevice device : btSystem.getCurrentlyPairedDevices()){
-                    screen.addDeviceToList(device);
                 }
             }
 
@@ -77,6 +77,7 @@ public class DeviceListPresenter implements BasePresenter {
                 break;
 
             case STATE_BT_ON:
+                addDefaultDevices();
                 screen.displaySearchDevicesBtnOn();
                 screen.displayListedDevices(true);
                 break;
@@ -94,6 +95,7 @@ public class DeviceListPresenter implements BasePresenter {
 
             case STATE_BT_CONNECT_FAIL:
                 screen.displayConnectedToDevice(false, "Failed to connect to " + btSystem.getDeviceName() + ". Try again.");
+                btSystem.connectionStop();
                 break;
 
             case STATE_BT_TURNING_ON:
@@ -110,6 +112,7 @@ public class DeviceListPresenter implements BasePresenter {
             case STATE_BT_OFF:
                 screen.displayBluetoothBtnOn();
                 screen.displayListedDevices(false);
+                btSystem.connectionStop();
                 break;
 
             case STATE_SEARCHING:
@@ -120,7 +123,18 @@ public class DeviceListPresenter implements BasePresenter {
             case STATE_SEARCH_DONE:
                 screen.displaySearchDone();
                 screen.displaySearchDevicesBtnOn();
+                setState(STATE_BT_ON);
                 break;
+        }
+    }
+
+    private void addDefaultDevices() {
+        if(_.ISDEBUG){
+            screen.addDeviceToList(new BluetoothDeviceItem(DEMO_DEVICE_NAME, DEMO_DEVICE_ADDRESS));
+        }
+
+        for (BluetoothDevice device : btSystem.getCurrentlyPairedDevices()){
+            screen.addDeviceToList(new BluetoothDeviceItem(device));
         }
     }
 
@@ -143,6 +157,7 @@ public class DeviceListPresenter implements BasePresenter {
 
     @Override
     public void setState(int state) {
+        _.log("presenter setState() " + this.state + " -> " + state);
         this.state = state;
         updateState();
     }
@@ -155,7 +170,7 @@ public class DeviceListPresenter implements BasePresenter {
         setState(STATE_BT_TURNING_ON);
     }
 
-    public void onClickConfirmConnect(BluetoothDevice device) {
+    public void onClickConfirmConnect(BluetoothDeviceItem device) {
         btSystem.cancelDiscovery();
         btSystem.pairToDevice(device);
         setState(STATE_BT_CONNECTING);
@@ -168,11 +183,11 @@ public class DeviceListPresenter implements BasePresenter {
 
     public void foundDevice(BluetoothDevice device) {
         device.fetchUuidsWithSdp();
-        screen.addDeviceToList(device);
+        screen.addDeviceToList(new BluetoothDeviceItem(device));
     }
 
-    public void onSelectDevice(BluetoothDevice device) {
-        String confirmationMsg = "Do you want to connect to: " + device.getName() + " - " + device.getAddress();
+    public void onSelectDevice(BluetoothDeviceItem device) {
+        String confirmationMsg = "Do you want to connect to: " + device.getDeviceName() + " - " + device.getDeviceAddress();
         screen.displayConnectConfirmation(confirmationMsg, new SimpleCallback(){
             @Override
             public void onReturn() {
@@ -185,7 +200,7 @@ public class DeviceListPresenter implements BasePresenter {
         BaseBluetoothActivity getContext();
         void checkPermissionsForBluetooth();
         void showEmergencyContactView();
-        void addDeviceToList(BluetoothDevice device);
+        void addDeviceToList(BluetoothDeviceItem device);
 
         void displayListedDevices(boolean isVisible);
         void displayBluetoothBtnOn();

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.local.SharedPrefHelper;
+import android.zeroh729.com.ecggrapher.data.model.ShortECGSummary;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
 import android.zeroh729.com.ecggrapher.interactors.EmergencyContactSystem;
@@ -31,7 +32,6 @@ public class MainPresenter implements BasePresenter {
     BluetoothSystem btSystem;
 
     MainScreen screen;
-    private ECGStoragePresenter ecgStoragePresenter;
     private EmergencyContactSystem emContactSystem;
     private SharedPrefHelper sharedPrefHelper = SharedPrefHelper.getInstance(ECGGrapher_.getInstance());
 
@@ -42,11 +42,9 @@ public class MainPresenter implements BasePresenter {
     public void setup(MainScreen screen) {
         // By reaching MainActivity, BT device should already have been selected by User
         this.screen = screen;
-        btSystem.setup(screen.getContext(), new SuccessCallback() {
+        btSystem.setup(new SuccessCallback() {
             @Override
             public void onSuccess() {
-                ecgStoragePresenter = new ECGStoragePresenter();
-                ecgStoragePresenter.setup();
                 setState(STATE_CONNECTED);
                 _.log("MainPresenter : " + btSystem.getDeviceName());
             }
@@ -80,7 +78,7 @@ public class MainPresenter implements BasePresenter {
                 btSystem.connectionStop();
                 break;
             case STATE_FINISHED:
-                btSystem.connectionStop();
+//                btSystem.connectionStop();
                 break;
         }
     }
@@ -91,14 +89,8 @@ public class MainPresenter implements BasePresenter {
         updateState();
     }
 
-    public void updateSummary(ECGSummary summary) {
-        String bpmNote  = "";
-        if(summary.getBPM() < 60){
-            bpmNote = "Sinus Bradycardia";
-        }else if (summary.getBPM() >= 101 && summary.getBPM() <= 180){
-            bpmNote = "Sinus Tachycardia";
-        }
-        screen.setSummaryText("BPM: " + summary.getBPM() + (!bpmNote.isEmpty() ? " - " + bpmNote : ""));
+    public void updateSummary(ShortECGSummary summary) {
+        screen.setSummaryText("BPM: " + summary.getBPM() + (!summary.getBPMNote().isEmpty() ? " - " + summary.getBPMNote() : ""));
     }
 
     public void onClickWarning() {
@@ -120,37 +112,8 @@ public class MainPresenter implements BasePresenter {
         });
     }
 
-    public void receiveData(int data) {
-        if(data > 100 || !_.ISFILTERED) { //receiving threshold = 100
-            double ddata = data/1024.00 * 5;
-            screen.graphECGdata(ddata);
-            int datacnt = ecgStoragePresenter.addDatapoint(data);
-
-            if(datacnt >= Constants.ECG_DATA_LIMIT){
-                final String filelines = ecgStoragePresenter.getFileLines();
-                final String filename = ecgStoragePresenter.saveECGData();
-                ECGAnalyzer.getInstance().analyzeData(filelines, new ECGAnalysisCallback() {
-                    @Override
-                    public void onSuccess(ECGSummary ecgSummary) {
-                        updateSummary(ecgSummary);
-                        String summaryFile = "Summary for " + filename + "\n"
-                                + "bpm: " + ecgSummary.getBPM() + "\n";
-                        if(ecgSummary.getDeviatingRRIcount() > 0){
-                            summaryFile += "Deviating RRI count : " + ecgSummary.getDeviatingRRIcount() + "\n";
-                            sharedPrefHelper.putString(Constants.PREFS_MOST_RECENT_AFIB_FILENAME, filename);
-                            screen.displayWarningIndicator();
-                        }
-                        ecgStoragePresenter.saveECGSummary(filename, summaryFile);
-                    }
-
-                    @Override
-                    public void onFail(String s) {
-
-                    }
-                });
-            }
-
-        }
+    public void receiveData(double data) {
+        screen.graphECGdata(data);
     }
 
     public void onClickSettings() {

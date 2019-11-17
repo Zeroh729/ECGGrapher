@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.zeroh729.com.ecggrapher.R;
+import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.presenters.SettingsPresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
@@ -26,6 +27,9 @@ public class SettingsActivity extends BaseActivity implements SettingsPresenter.
     EditText et_emcontact;
 
     @ViewById
+    EditText et_savefiledir;
+
+    @ViewById
     Button btn_save_edit;
 
     @ViewById
@@ -40,6 +44,12 @@ public class SettingsActivity extends BaseActivity implements SettingsPresenter.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("Settings");
+
+        et_savefiledir.setText(Constants.SAVE_FILEDIR);
+        et_savefiledir.setFocusable(false);
+        et_savefiledir.setFocusableInTouchMode(false);
+        et_savefiledir.setActivated(false);
+        et_savefiledir.setClickable(false);
     }
 
 

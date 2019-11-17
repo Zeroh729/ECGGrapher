@@ -5,6 +5,7 @@ import android.content.Context;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
+import android.zeroh729.com.ecggrapher.data.model.BluetoothDeviceItem;
 
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.ViewById;
@@ -21,8 +22,13 @@ public class DeviceViewHolder extends LinearLayout {
         super(context);
     }
 
-    public void bind(BluetoothDevice device) {
-        device_name.setText(device.getName());
-        device_address.setText(device.getAddress());
+    public void bind(BluetoothDeviceItem device) {
+        device_name.setText(device.getDeviceName());
+        device_address.setText(device.getDeviceAddress());
+    }
+
+    public void bind(String name, String address) {
+        device_name.setText(name);
+        device_address.setText(address);
     }
 }

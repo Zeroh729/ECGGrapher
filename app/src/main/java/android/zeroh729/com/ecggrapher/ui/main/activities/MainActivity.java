@@ -1,36 +1,23 @@
 package android.zeroh729.com.ecggrapher.ui.main.activities;
 
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Handler;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
-import android.zeroh729.com.ecggrapher.data.local.SharedPrefHelper;
 import android.zeroh729.com.ecggrapher.data.model.ECGSeries;
-import android.zeroh729.com.ecggrapher.interactors.BluetoothDataHandler;
+import android.zeroh729.com.ecggrapher.data.model.ShortECGSummary;
 import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
-import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
-import android.zeroh729.com.ecggrapher.interactors.EmergencyContactSystem;
-import android.zeroh729.com.ecggrapher.interactors.MockBluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
-import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
-import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
 import android.zeroh729.com.ecggrapher.presenters.MainPresenter;
-import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
 import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
-import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
 import android.zeroh729.com.ecggrapher.ui.main.fragments.SettingsDialogFragment;
 import android.zeroh729.com.ecggrapher.ui.main.views.MyFadeFormatter;
 import android.zeroh729.com.ecggrapher.utils._;
@@ -39,19 +26,11 @@ import com.androidplot.util.Redrawer;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.XYPlot;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.Extra;
-import org.androidannotations.annotations.ItemClick;
-import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-
-import ecganal.Callback.ECGAnalysisCallback;
-import ecganal.ECGAnalyzer;
-import ecganal.Model.ECGSummary;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends BaseBluetoothActivity implements MainPresenter.MainScreen {
@@ -83,34 +62,16 @@ public class MainActivity extends BaseBluetoothActivity implements MainPresenter
         plot.setRangeBoundaries(0, Constants.COUNT_Y, BoundaryMode.FIXED);
         plot.setDomainBoundaries(0, Constants.COUNT_X, BoundaryMode.FIXED);
         redrawer = new Redrawer(plot, 60, true);
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(btreceiver, filter);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        _.log("Receiver unregistered");
-        unregisterReceiver(btreceiver);
         if(redrawer != null)
             redrawer.finish();
         presenter.setState(MainPresenter.STATE_FINISHED);
     }
 
-    private final BroadcastReceiver btreceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction() != null
-                    && intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-
-                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                    if (state == BluetoothAdapter.STATE_OFF) {
-                        presenter.setState(MainPresenter.STATE_DISCONNECTED);
-                    }
-                }
-            }
-    };
 
     @Click(R.id.view_popup_warning)
     void onClickWarning(){
@@ -123,17 +84,61 @@ public class MainActivity extends BaseBluetoothActivity implements MainPresenter
         presenter.onClickSettings();
     }
 
+    @Override
+    public void receiveBtStateUpdate(Intent intent) {
+        String action = intent.getAction();
+        if(action == null) return;
+        if(action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+            if (state == BluetoothAdapter.STATE_OFF) {
+                onDisconnected();
+            }
+        } else if(action.equals(Constants.ACTION_BTCONN_SERVICE)){
+            int msgType = intent.getIntExtra(Constants.EXTRA_MSG_TYPE, -1);
+            if(msgType == Constants.MSG_STATE_CHANGED){
+                int state = intent.getIntExtra(Constants.EXTRA_BTCONN_STATE, -1);
+                switch (state) {
+                    case BluetoothService.STATE_NONE:
+                    case BluetoothService.STATE_ERROR:
+                    case BluetoothService.STATE_CONNECTION_FAILED:
+                    case BluetoothService.STATE_CONNECTION_LOST:
+                        _.log("MESSAGE_STATE_CHANGE : err code " + state);
+                        presenter.setState(MainPresenter.STATE_DISCONNECTED);
+                        break;
+                    case BluetoothService.STATE_CONNECTED:
+                        _.log("MESSAGE_STATE_CHANGE : Connected");
+                        presenter.setState(MainPresenter.STATE_CONNECTED);
+                        break;
+                }
+            }else if(msgType == Constants.MSG_RECEIVED_DATA){
+                double data = intent.getDoubleExtra(Constants.EXTRA_BTCONN_RECEIVED_DATA, -1);
+                receiveData(data);
+            }else if(msgType == Constants.MSG_HEART_WARNING){
+                displayWarningIndicator();
+            }else if(msgType == Constants.MSG_UPDATE_SUMMARY){
+                ShortECGSummary ecgSummary = intent.getParcelableExtra(Constants.EXTRA_BTCONN_UPDATE_SUMMARY);
+                displaySummary(ecgSummary);
+            }
+        }
+    }
+
     @UiThread
-    public void receiveData(int data) {
+    public void receiveData(double data) {
         presenter.receiveData(data);
     }
 
+    @Override
+    public void addActionToFilter(IntentFilter filter) {
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(Constants.ACTION_BTCONN_SERVICE);
+    }
+
     @UiThread
-    void displaySummary(ECGSummary summary){
+    void displaySummary(ShortECGSummary summary){
         presenter.updateSummary(summary);
     }
 
-    public void disconnected() {
+    public void onDisconnected() {
         presenter.setState(MainPresenter.STATE_DISCONNECTED);
     }
 
@@ -147,7 +152,6 @@ public class MainActivity extends BaseBluetoothActivity implements MainPresenter
         return this;
     }
 
-    @Override
     public void displayDisconnectedView() {
         _.showToast("Disconnected from device");
         finish();
@@ -224,7 +228,8 @@ public class MainActivity extends BaseBluetoothActivity implements MainPresenter
         }
     };
 
-    public void connected() {
-        presenter.setState(MainPresenter.STATE_CONNECTED);
+    @Override
+    public void onBackPressed() {
+        displaySettingsDialog();
     }
 }

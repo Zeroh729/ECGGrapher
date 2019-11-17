@@ -1,48 +1,58 @@
 package android.zeroh729.com.ecggrapher.interactors;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
+import android.zeroh729.com.ecggrapher.data.local.SharedPrefHelper;
+import android.zeroh729.com.ecggrapher.data.model.ShortECGSummary;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothDataHandler;
+import android.zeroh729.com.ecggrapher.interactors.interfaces.DataCallback;
+import android.zeroh729.com.ecggrapher.presenters.ECGStoragePresenter;
 import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.ui.main.activities.MainActivity;
 import android.zeroh729.com.ecggrapher.utils._;
 
 import com.androidplot.xy.AdvancedLineAndPointRenderer;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.LogRecord;
 
+import ecganal.Callback.ECGAnalysisCallback;
+import ecganal.ECGAnalyzer;
+import ecganal.Model.ECGSummary;
+
+import static android.zeroh729.com.ecggrapher.interactors.BluetoothService.MESSAGE_READ;
+import static android.zeroh729.com.ecggrapher.interactors.BluetoothService.MESSAGE_STATE_CHANGE;
+
 public class BluetoothDataHandler extends AbstractBluetoothDataHandler {
-    public BluetoothDataHandler(BaseBluetoothActivity activity) {
-        super(activity);
-    }
 
     @Override
     public void handleMessage(Message msg) {
-        final BaseBluetoothActivity activity = mActivity.get();
         _.log("Received data! " + msg.what);
+        broadcast(msg);
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    private void broadcast(Message msg){
+        _.log("Broadcasting " + msg.what);
         switch (msg.what) {
-            case Constants.MESSAGE_SNACKBAR:
-                activity.displayDisconnectedView();
+            case MESSAGE_STATE_CHANGE:
+                Intent intent = new Intent();
+                intent.setAction(Constants.ACTION_BTCONN_SERVICE);
+                intent.putExtra(Constants.EXTRA_MSG_TYPE, Constants.MSG_STATE_CHANGED);
+                intent.putExtra(Constants.EXTRA_BTCONN_STATE, msg.arg1);
+                ECGGrapher_.getInstance().sendBroadcast(intent);
                 break;
-            case Constants.MESSAGE_STATE_CHANGE:
-                switch (msg.arg1) {
-                    case Constants.STATE_NONE:
-                    case Constants.STATE_ERROR:
-                    case Constants.STATE_CONNECTION_LOST:
-                        _.log("MESSAGE_STATE_CHANGE : err - " + msg.arg1);
-                        activity.disconnected();
-                        break;
-                    case Constants.STATE_CONNECTED:
-                        _.log("MESSAGE_STATE_CHANGE : Connected");
-                        activity.connected();
-                        break;
-                }
-                break;
-            case Constants.MESSAGE_READ:
-                //QQ - Graph the message
+            case MESSAGE_READ:
                 try {
                     String message = ((String) msg.obj);
                     if(!message.trim().isEmpty() && !message.contains("!")){
@@ -50,11 +60,11 @@ public class BluetoothDataHandler extends AbstractBluetoothDataHandler {
                             String[] messages = message.split("\n");
                             if(!messages[messages.length-1].trim().isEmpty()) {
                                 int data = Integer.parseInt(messages[messages.length-1].trim());
-                                activity.receiveData(data);
+                                consumeData(data);
                             }
                         }else{
                             int data = Integer.parseInt(message.trim());
-                            activity.receiveData(data);
+                            consumeData(data);
                         }
                     }
                 }catch (Exception e) {
@@ -63,5 +73,4 @@ public class BluetoothDataHandler extends AbstractBluetoothDataHandler {
                 break;
         }
     }
-
 }

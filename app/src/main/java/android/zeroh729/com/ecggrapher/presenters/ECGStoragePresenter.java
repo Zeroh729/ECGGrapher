@@ -11,6 +11,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static android.zeroh729.com.ecggrapher.data.local.Constants.SAVE_FILEDIR;
+
 public class ECGStoragePresenter implements BasePresenter {
     private Date startDate;
     private long startTime;
@@ -46,14 +48,13 @@ public class ECGStoragePresenter implements BasePresenter {
     }
 
     public String saveECGData(){
-        String fileLocation = Environment.getExternalStorageDirectory().getPath()+"/ECGData";
         String filename = DateFormatter.formatyyyyMMddHHmmss(startDate.getTime());
-        _.log("ECGStoragePresenter Preparing to store file in " + fileLocation
+        _.log("ECGStoragePresenter Preparing to store file in " + SAVE_FILEDIR
                 + "\nFilename: " + filename
                 + "\nData:" + filelines.substring(0,300)
                 + "\n...");
 
-        storageSystem.saveStringToFile(fileLocation, filename+".csv", filelines);
+        storageSystem.saveStringToFile(SAVE_FILEDIR, filename+".csv", filelines);
         init();
         return filename;
     }

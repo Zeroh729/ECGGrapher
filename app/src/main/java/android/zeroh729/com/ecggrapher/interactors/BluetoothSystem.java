@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.zeroh729.com.ecggrapher.ECGGrapher_;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
+import android.zeroh729.com.ecggrapher.data.model.BluetoothDeviceItem;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.AbstractBluetoothDataHandler;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SuccessCallback;
 import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
@@ -14,14 +16,14 @@ import org.androidannotations.annotations.EBean;
 
 import java.util.Set;
 
+import static android.zeroh729.com.ecggrapher.interactors.BluetoothService.STATE_CONNECTED;
+
 public class BluetoothSystem {
     private static BluetoothSystem INSTANCE;
-    private static BluetoothService bluetoothService;
     private static BluetoothAdapter btadapter;
-
+    private BluetoothDeviceItem device;
+    Intent bluetoothServiceIntent;
     public static final int REQCODE_ENABlE_BT = 20221;
-    private static AbstractBluetoothDataHandler btDataHandler;
-    private BaseBluetoothActivity activity;
 
     public static BluetoothSystem getInstance(){
         if(INSTANCE == null)
@@ -30,53 +32,41 @@ public class BluetoothSystem {
         return INSTANCE;
     }
 
-    public void setup(BaseBluetoothActivity activity, SuccessCallback callback) {
-        this.activity = activity;
-        if(bluetoothService != null && bluetoothService.getState() == Constants.STATE_CONNECTED) {
-            if(btDataHandler!=null) {
-                btDataHandler.setBaseBluetoothActivity(this.activity);
-                callback.onSuccess();
-            }else{
-                callback.onFail();
-            }
-        }else{
-            btadapter = BluetoothAdapter.getDefaultAdapter();
-            if (btadapter != null) {
-                callback.onSuccess();
-            } else {
-                callback.onFail();
-            }
+    public void setup(SuccessCallback callback) {
+        btadapter = BluetoothAdapter.getDefaultAdapter();
+        if (btadapter != null) {
+            callback.onSuccess();
+        } else {
+            callback.onFail();
         }
     }
 
     public String getDeviceName(){
-        if(bluetoothService != null){
-            return bluetoothService.myDevice.getName();
-        }
-        if(_.ISDEBUG){
-            return "Simulated Data";
+        if(device != null){
+            return device.getDeviceName();
         }
         return "";
     }
 
-    public BluetoothSystem pairToDevice(BluetoothDevice device){
+    public void pairToDevice(BluetoothDeviceItem device){
         //TODO ADD DEBUG MODE
-        btDataHandler = new BluetoothDataHandler(activity);
-        bluetoothService = new BluetoothService(btDataHandler, device);
-        connectionStart();
-        return this;
-    }
-
-    public void connectionStart(){
-        if(bluetoothService != null)
-            bluetoothService.connect();
+        this.device = device;
+        bluetoothServiceIntent = new Intent(ECGGrapher_.getInstance(), BluetoothService.class);
+        bluetoothServiceIntent.putExtra("btDeviceAddress", device.getDeviceAddress());
+        ECGGrapher_.getInstance().startService(bluetoothServiceIntent);
     }
 
     public void connectionStop(){
-        if(bluetoothService != null) {
-            bluetoothService.stop();
-            bluetoothService = null;
-        }
+        //TODO: how to know if service is running?
+//        if(bluetoothServiceIntent != null) {
+//            ECGGrapher_.getInstance().stopService(bluetoothServiceIntent);
+//            bluetoothServiceIntent = null;
+//        }
+        Intent intent = new Intent();
+        intent.setAction(BluetoothService.ACTION_BT_SERVICE);
+        intent.putExtra(BluetoothService.EXTRA_BT_SERVICE,BluetoothService.EXTRA_BT_CHANGE_STATE);
+        intent.putExtra(BluetoothService.EXTRA_BT_CHANGE_STATE,BluetoothService.STATE_STOP);
+        ECGGrapher_.getInstance().sendBroadcast(intent);
     }
 
     public boolean isBTEnabled(){

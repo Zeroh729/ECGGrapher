@@ -6,7 +6,7 @@ import android.widget.Toast;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 
 public class _ {
-    public static boolean ISDEBUG = false;
+    public static boolean ISDEBUG = true;
     public static boolean ISFILTERED = false;
 
     public static void showToast(String message){

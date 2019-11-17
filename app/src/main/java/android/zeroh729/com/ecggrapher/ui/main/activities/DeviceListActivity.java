@@ -1,16 +1,12 @@
 package android.zeroh729.com.ecggrapher.ui.main.activities;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -20,10 +16,10 @@ import android.zeroh729.com.ecggrapher.R;
 import android.zeroh729.com.ecggrapher.data.local.Constants;
 import android.zeroh729.com.ecggrapher.data.local.PermissionsHelper;
 import android.zeroh729.com.ecggrapher.data.local.SharedPrefHelper;
-import android.zeroh729.com.ecggrapher.interactors.BluetoothSystem;
+import android.zeroh729.com.ecggrapher.data.model.BluetoothDeviceItem;
+import android.zeroh729.com.ecggrapher.interactors.BluetoothService;
 import android.zeroh729.com.ecggrapher.interactors.interfaces.SimpleCallback;
 import android.zeroh729.com.ecggrapher.presenters.DeviceListPresenter;
-import android.zeroh729.com.ecggrapher.ui.base.BaseActivity;
 import android.zeroh729.com.ecggrapher.ui.base.BaseBluetoothActivity;
 import android.zeroh729.com.ecggrapher.ui.main.adapters.BluetoothDevicesAdapter;
 import android.zeroh729.com.ecggrapher.ui.main.fragments.EmergencyContactFragment;
@@ -62,25 +58,18 @@ public class DeviceListActivity extends BaseBluetoothActivity implements DeviceL
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(btreceiver, filter);
-        presenter = new DeviceListPresenter();
-        presenter.setup(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        presenter = new DeviceListPresenter();
+        presenter.setup(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(btreceiver);
     }
 
     @AfterViews
@@ -104,40 +93,12 @@ public class DeviceListActivity extends BaseBluetoothActivity implements DeviceL
     }
 
     @ItemClick
-    void lv_devicesItemClicked(final BluetoothDevice device) {
+    void lv_devicesItemClicked(final BluetoothDeviceItem device) {
         presenter.onSelectDevice(device);
     }
 
-    private final BroadcastReceiver btreceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                presenter.foundDevice(device);
 
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                presenter.setState(DeviceListPresenter.STATE_SEARCH_DONE);
-
-            } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)){
-                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        presenter.setState(DeviceListPresenter.STATE_BT_TURNED_OFF);
-                        break;
-
-//                    case BluetoothAdapter.STATE_TURNING_ON:
-//                        presenter.setState(DeviceListPresenter.STATE_BT_TURNING_ON);
-//                        break;
-
-                    case BluetoothAdapter.STATE_ON:
-                        presenter.setState(DeviceListPresenter.STATE_BT_ON);
-                        break;
-                }
-            }
-        }
-    };
-
-    @OnActivityResult(BluetoothSystem.REQCODE_ENABlE_BT)
+    @OnActivityResult(Constants.REQCODE_ENABlE_BT)
     void onBluetoothResult(int resultCode){
         if (resultCode == RESULT_OK) {
             presenter.onClickSearchDevices();
@@ -163,7 +124,7 @@ public class DeviceListActivity extends BaseBluetoothActivity implements DeviceL
         }
     }
     @Override
-    public void addDeviceToList(BluetoothDevice device) {
+    public void addDeviceToList(BluetoothDeviceItem device) {
         if (adapter.getPosition(device) == -1) {
             adapter.add(device);
             adapter.notifyDataSetChanged();
@@ -276,25 +237,55 @@ public class DeviceListActivity extends BaseBluetoothActivity implements DeviceL
                 }).show();
     }
 
-
     @Override
-    public void displayDisconnectedView() {
+    public void receiveBtStateUpdate(Intent intent) {
+        String action = intent.getAction();
+        if(action == null) return;
+        if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            presenter.foundDevice(device);
 
+        } else if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
+            presenter.setState(DeviceListPresenter.STATE_SEARCH_DONE);
+
+        } else if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)){
+            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+            switch (state) {
+                case BluetoothAdapter.STATE_OFF:
+                    presenter.setState(DeviceListPresenter.STATE_BT_TURNED_OFF);
+                    break;
+
+                case BluetoothAdapter.STATE_ON:
+                    presenter.setState(DeviceListPresenter.STATE_BT_ON);
+                    break;
+            }
+        } else if(action.equals(Constants.ACTION_BTCONN_SERVICE)){
+            int msgType = intent.getIntExtra(Constants.EXTRA_MSG_TYPE, -1);
+            if(msgType == Constants.MSG_STATE_CHANGED){
+                int state = intent.getIntExtra(Constants.EXTRA_BTCONN_STATE, -1);
+                switch (state) {
+                    case BluetoothService.STATE_NONE:
+                    case BluetoothService.STATE_ERROR:
+                    case BluetoothService.STATE_CONNECTION_FAILED:
+                    case BluetoothService.STATE_CONNECTION_LOST:
+                        _.log("MESSAGE_STATE_CHANGE : err code " + state);
+                        presenter.setState(DeviceListPresenter.STATE_BT_CONNECT_FAIL);
+                        break;
+                    case BluetoothService.STATE_CONNECTED:
+                        _.log("MESSAGE_STATE_CHANGE : Connected");
+                        presenter.setState(DeviceListPresenter.STATE_BT_CONNECTED);
+                        break;
+                }
+            }
+        }
     }
 
     @Override
-    public void connected() {
-        presenter.setState(DeviceListPresenter.STATE_BT_CONNECTED);
-    }
-
-    @Override
-    public void disconnected() {
-        dialog.dismiss();
-        presenter.setState(DeviceListPresenter.STATE_BT_CONNECT_FAIL);
-    }
-
-    @Override
-    public void receiveData(int data) {
-
+    public void addActionToFilter(IntentFilter filter) {
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(Constants.ACTION_BTCONN_SERVICE);
     }
 }

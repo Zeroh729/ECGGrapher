@@ -10,6 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.zeroh729.com.ecggrapher.R;
+import android.zeroh729.com.ecggrapher.data.model.BluetoothDeviceItem;
 import android.zeroh729.com.ecggrapher.ui.main.views.viewholders.DeviceViewHolder;
 import android.zeroh729.com.ecggrapher.ui.main.views.viewholders.DeviceViewHolder_;
 
@@ -28,7 +29,7 @@ import java.util.List;
  */
 @EBean
 public class BluetoothDevicesAdapter extends BaseAdapter {
-    ArrayList<BluetoothDevice> devices = new ArrayList<>();
+    ArrayList<BluetoothDeviceItem> devices = new ArrayList<>();
 
     @RootContext
     Context context;
@@ -55,7 +56,7 @@ public class BluetoothDevicesAdapter extends BaseAdapter {
     }
 
     @Override
-    public BluetoothDevice getItem(int position) {
+    public BluetoothDeviceItem getItem(int position) {
         return devices.get(position);
     }
 
@@ -64,12 +65,20 @@ public class BluetoothDevicesAdapter extends BaseAdapter {
         return position;
     }
 
-    public int getPosition(BluetoothDevice device){
+    public int getPosition(BluetoothDeviceItem device){
         return devices.indexOf(device);
     }
 
-    public void add(BluetoothDevice device) {
-        devices.add(device);
+    public void add(BluetoothDeviceItem device) {
+        boolean isUnique = true;
+        for(BluetoothDeviceItem d : devices){
+            if(device.getDeviceAddress().equals(d.getDeviceAddress())){
+                isUnique = false;
+                break;
+            }
+        }
+        if(isUnique)
+            devices.add(device);
     }
 
 }
